@@ -1,0 +1,77 @@
+/* ============================================================
+   DESIGNSYSTEM – farger, typografi, avstander
+   ============================================================
+   Vil dere endre fargene på nettsiden? Endre verdiene under.
+   Alle komponenter henter fargene sine herfra.
+
+   Fargekoder skrives som heks-koder, f.eks. #0B4F5C.
+   Tips: sjekk kontrast på https://webaim.org/resources/contrastchecker/
+   (tekst bør ha kontrast minst 4.5:1 mot bakgrunnen).
+   ============================================================ */
+
+:root {
+  /* --- Hovedfarger --- */
+  --color-primary: #0b4f5c;          /* Petrol – knapper, lenker, overskrifter */
+  --color-primary-dark: #072f37;     /* Mørk petrol – hero og footer */
+  --color-primary-light: #e3efef;    /* Lys petrol – bakgrunner, merker */
+  --color-secondary: #1f8a70;        /* Biogrønn – detaljer og ikoner */
+  --color-accent: #ff8a4c;           /* Varm oransje – fremhevinger, energi */
+  --color-accent-light: #ffe8dc;
+
+  /* --- Flater og tekst --- */
+  --color-background: #f6f7f2;       /* Sidebakgrunn (lys, varm hvit) */
+  --color-surface: #ffffff;          /* Kort og skjema */
+  --color-surface-alt: #eef2ee;      /* Alternerende seksjoner */
+  --color-text: #0f2329;             /* Brødtekst */
+  --color-text-muted: #4c5f65;       /* Sekundær tekst */
+  --color-text-inverse: #f4f8f6;     /* Tekst på mørk bakgrunn */
+  --color-text-inverse-muted: #a9c3c3;
+  --color-border: #d9e1dc;
+
+  /* --- Statusfarger (skjemaer) --- */
+  --color-success: #1b7a52;
+  --color-success-bg: #e5f4ec;
+  --color-error: #b3261e;
+  --color-error-bg: #fbe9e7;
+  --color-info: #0b4f5c;
+  --color-info-bg: #e3efef;
+
+  /* --- Kategorifarger for arrangementer --- */
+  --cat-sosialt: #d9532f;
+  --cat-faglig: #1f8a70;
+  --cat-bedrift: #2a62a3;
+  --cat-generalforsamling: #8a5a00;
+  --cat-annet: #5b6770;
+
+  /* --- Typografi --- */
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Instrument Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-base: 1.0625rem;
+  --text-lg: 1.25rem;
+  --text-xl: clamp(1.5rem, 1.2rem + 1vw, 1.875rem);
+  --text-2xl: clamp(1.875rem, 1.4rem + 1.8vw, 2.75rem);
+  --text-3xl: clamp(2.25rem, 1.5rem + 3vw, 3.75rem);
+  --text-hero: clamp(3rem, 1.6rem + 7vw, 7.5rem);
+
+  /* --- Former og skygger --- */
+  --radius-small: 8px;
+  --radius-medium: 14px;
+  --radius-large: 24px;
+  --radius-pill: 999px;
+
+  --shadow-small: 0 1px 2px rgba(15, 35, 41, 0.06), 0 2px 8px rgba(15, 35, 41, 0.05);
+  --shadow-medium: 0 4px 12px rgba(15, 35, 41, 0.07), 0 16px 40px rgba(15, 35, 41, 0.08);
+
+  /* --- Layout --- */
+  --content-width: 1180px;
+  --gutter: clamp(1rem, 0.5rem + 2.5vw, 2rem);
+  --section-space: clamp(4rem, 3rem + 4vw, 7rem);
+  --nav-height: 72px;
+
+  /* --- Bevegelse --- */
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --duration: 220ms;
+}
