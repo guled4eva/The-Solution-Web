@@ -1,4 +1,5 @@
-import { copyFileSync, existsSync, mkdirSync, readdirSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { dirname, join } from "node:path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
@@ -71,7 +72,48 @@ function githubPagesRoutes() {
   };
 }
 
+/**
+ * Admin login for /admin: the e-mail and password are set in Tina (Innstillinger).
+ * Only a SHA-256 hash ends up in the website code – the plain password is removed
+ * from the bundle. NB: it is still stored in plain text in the (public) GitHub repo,
+ * so this is a simple lock, not real security. Never reuse this password elsewhere.
+ */
+const SETTINGS_FILE = "content/innstillinger/nettside.json";
+
+function adminHash() {
+  try {
+    const s = JSON.parse(readFileSync(SETTINGS_FILE, "utf8"));
+    const email = String(s.adminEmail || s.email || "").trim().toLowerCase();
+    const password = String(s.adminPassword || "");
+    if (!email || !password) return "";
+    return createHash("sha256").update(`${email}:${password}`).digest("hex");
+  } catch {
+    return "";
+  }
+}
+
+/** Removes the admin password from the settings before they are bundled. */
+function stripAdminPassword() {
+  return {
+    name: "strip-admin-password",
+    enforce: "pre",
+    transform(code, id) {
+      if (!id.replace(/\\/g, "/").endsWith(SETTINGS_FILE)) return null;
+      try {
+        const data = JSON.parse(code);
+        delete data.adminPassword;
+        return { code: JSON.stringify(data), map: null };
+      } catch {
+        return null;
+      }
+    },
+  };
+}
+
 export default defineConfig({
   base: BASE,
-  plugins: [react(), githubPagesRoutes()],
+  plugins: [stripAdminPassword(), react(), githubPagesRoutes()],
+  define: {
+    __ADMIN_HASH__: JSON.stringify(adminHash()),
+  },
 });

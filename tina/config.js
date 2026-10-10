@@ -276,6 +276,19 @@ export default defineConfig({
             label: "Formspree-adresse – påmelding (reserve)",
             description: "Brukes bare hvis Google Apps Script-adressen over står tom. Gir e-post per påmelding, men ingen /admin-oversikt.",
           },
+          {
+            type: "string",
+            name: "adminEmail",
+            label: "/admin – e-post for innlogging",
+            description: "E-posten man skriver inn for å logge inn på www.thesolutionoslomet.no/admin.",
+          },
+          {
+            type: "string",
+            name: "adminPassword",
+            label: "/admin – passord",
+            description:
+              "NB: Enkel lås. Passordet ligger synlig i GitHub-repoet. Ikke bruk det samme passordet noe annet sted.",
+          },
           { type: "boolean", name: "showStats", label: "Vis tall-seksjonen på forsiden" },
           {
             type: "object",

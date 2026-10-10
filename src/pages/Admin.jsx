@@ -7,6 +7,7 @@ import { formatDeadline, formatLongDate, isPast, parseLocalDate } from "../lib/d
 import { isFilled } from "../lib/config.js";
 import { DIET_OPTIONS, callScript, dietText, isValidScriptUrl } from "../lib/registrations.js";
 import { usePageTitle } from "../hooks/usePageTitle.js";
+import SimpleAdmin from "./SimpleAdmin.jsx";
 
 const SESSION_KEY = "ts-admin-password";
 
@@ -212,9 +213,14 @@ function EventGroup({ group, onDelete, deleting }) {
   );
 }
 
+/** /admin: full overview with Google Apps Script, otherwise the simple e-mail/password version. */
 export default function Admin() {
   usePageTitle("Admin – påmeldinger");
   useNoIndex();
+  return isValidScriptUrl(siteConfig.registrationScriptUrl) ? <ScriptAdmin /> : <SimpleAdmin />;
+}
+
+function ScriptAdmin() {
   const scriptUrl = siteConfig.registrationScriptUrl;
   const configured = isValidScriptUrl(scriptUrl);
 

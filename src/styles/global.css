@@ -467,6 +467,23 @@ textarea.field__control--short {
 .admin-table tr:last-child td {
   border-bottom: 0;
 }
+.admin-simple-list {
+  margin-top: 1.5rem;
+}
+.admin-event--simple {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.admin-event--simple .admin-event__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
 .admin-empty {
   color: var(--color-text-muted);
   font-style: italic;
