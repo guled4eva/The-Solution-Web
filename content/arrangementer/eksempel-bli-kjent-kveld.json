@@ -1,0 +1,13 @@
+{
+  "title": "Eksempel: Bli kjent-kveld",
+  "date": "2026-10-22",
+  "time": "18:00",
+  "location": "[LEGG INN STED]",
+  "category": "Sosialt",
+  "description": "Eksempelarrangement. Slik ser et sosialt arrangement ut på nettsiden.",
+  "fullDescription": "Dette er et eksempelarrangement som viser hvordan en arrangementsside ser ut. Bytt ut teksten med en ekte beskrivelse.\n\nSkriv gjerne hva som skjer, hvem arrangementet passer for, og om det er noe deltakerne bør ta med seg.",
+  "image": "",
+  "registrationLink": "",
+  "registrationDeadline": "",
+  "placeholder": true
+}

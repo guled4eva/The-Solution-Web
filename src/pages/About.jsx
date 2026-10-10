@@ -16,6 +16,8 @@ import Reveal from "../components/Reveal.jsx";
 import SectionHeading from "../components/SectionHeading.jsx";
 import { BondDivider } from "../components/ScienceArt.jsx";
 import { siteConfig } from "../data/siteConfig.js";
+import { texts } from "../data/texts.js";
+import Paragraphs from "../components/Paragraphs.jsx";
 import { history } from "../data/history.js";
 import { assetUrl } from "../lib/assets.js";
 import { formatShortDate, parseLocalDate, yearOf } from "../lib/dates.js";
@@ -45,17 +47,12 @@ export default function About() {
         <div className="container about-intro">
           <SectionHeading id="hvem" eyebrow="Hvem er vi?" title="Studenter som vil gjøre studietiden bedre" />
           <div className="about-intro__text prose">
-            <p className="lead">
-              <strong>The Solution er linjeforeningen for Bioteknologi og kjemi ved OsloMet.</strong>
-            </p>
-            <p>
-              Vi er en frivillig studentorganisasjon, stiftet 12. mars 2026. Foreningen drives av studenter, for
-              studenter – og finnes for å gjøre det faglige og sosiale miljøet rundt studiet så godt som mulig.
-            </p>
-            <p>
-              Enten du er helt ny på studiet eller snart ferdig, er The Solution et sted å bli kjent med andre, lære noe
-              nytt og knytte kontakter for fremtiden.
-            </p>
+            {texts.aboutLead && (
+              <p className="lead">
+                <strong>{texts.aboutLead}</strong>
+              </p>
+            )}
+            <Paragraphs text={texts.aboutText} />
           </div>
         </div>
       </section>
@@ -133,7 +130,8 @@ export default function About() {
             </span>
             <h2 className="info-panel__title">Generalforsamling</h2>
             <p>
-              <strong>Generalforsamlingen er The Solutions øverste organ.</strong> Den holdes minst én gang i året.
+              <strong>Generalforsamlingen er The Solutions øverste organ.</strong> Den holdes minst én gang i året, i
+              oktober i høstsemesteret.
             </p>
             <p>
               Medlemmer har rett til å delta på foreningens arrangementer, stemme på generalforsamlingen og bli valgt til

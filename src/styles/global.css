@@ -1858,6 +1858,23 @@ select.field__control {
   font-size: var(--text-base);
   font-weight: 500;
 }
+.contact-card__notice {
+  display: flex;
+  gap: 0.65rem;
+  margin-top: 1.5rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-medium);
+  background: var(--color-surface-alt);
+  font-size: var(--text-sm);
+}
+.contact-card__notice svg {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  color: var(--color-primary);
+}
+.contact-card__notice p {
+  color: var(--color-text) !important;
+}
 .contact-card__socials {
   margin-top: auto;
   padding-top: 1.5rem;
@@ -1892,19 +1909,51 @@ select.field__control {
   width: 100%;
   margin: 0.75rem 0 2rem;
 }
-.coop-list li {
+.coop-list__item {
   display: flex;
   align-items: center;
   gap: 0.6rem;
+  height: 100%;
+  min-height: 48px;
   padding: 0.65rem 0.85rem;
   border: 1px solid rgba(169, 195, 195, 0.22);
   border-radius: var(--radius-medium);
   font-size: var(--text-sm);
   font-weight: 500;
+  color: var(--color-text-inverse);
+  text-decoration: none;
+  transition:
+    background-color var(--duration) var(--ease),
+    border-color var(--duration) var(--ease),
+    transform var(--duration) var(--ease);
+}
+a.coop-list__item:hover {
+  background: rgba(255, 138, 76, 0.12);
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+  text-decoration: none;
 }
 .coop-list svg {
   color: var(--color-accent);
   flex-shrink: 0;
+}
+.coop-list__mail {
+  margin-left: auto;
+  opacity: 0;
+  transition: opacity var(--duration) var(--ease);
+}
+a.coop-list__item:hover .coop-list__mail,
+a.coop-list__item:focus-visible .coop-list__mail {
+  opacity: 1;
+}
+@media (hover: none) {
+  .coop-list__mail {
+    opacity: 0.7;
+  }
+}
+.coop-list__hint {
+  margin: -1.25rem 0 1.75rem;
+  font-size: var(--text-xs);
 }
 .contact-card__cta {
   margin-top: auto;
@@ -2379,6 +2428,21 @@ select.field__control {
 }
 .footer__bottom p {
   margin: 0;
+}
+.footer__login {
+  width: 100%;
+  font-size: var(--text-xs);
+  color: var(--color-text-inverse-muted) !important;
+  text-decoration: none;
+}
+.footer__login:hover {
+  text-decoration: underline;
+}
+@media (min-width: 600px) {
+  .footer__login {
+    width: auto;
+    order: 3;
+  }
 }
 .footer__motto {
   font-family: var(--font-display);

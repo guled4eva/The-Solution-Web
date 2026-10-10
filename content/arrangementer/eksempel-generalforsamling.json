@@ -1,0 +1,13 @@
+{
+  "title": "Eksempel: Generalforsamling",
+  "date": "2026-09-10",
+  "time": "17:00",
+  "location": "[LEGG INN STED]",
+  "category": "Generalforsamling",
+  "description": "Eksempelarrangement i fortiden. Viser hvordan tidligere arrangementer vises.",
+  "fullDescription": "Dette er et eksempel på et tidligere arrangement. Når datoen har passert, flyttes arrangementet automatisk til «Tidligere arrangementer».",
+  "image": "",
+  "registrationLink": "",
+  "registrationDeadline": "",
+  "placeholder": true
+}

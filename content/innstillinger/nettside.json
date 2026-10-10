@@ -1,0 +1,23 @@
+{
+  "associationName": "The Solution",
+  "tagline": "Fag. Fellesskap. Fremtid.",
+  "programme": "Bioteknologi og kjemi",
+  "university": "OsloMet",
+  "founded": "12.03.2026",
+  "email": "thesolution.oslomet@gmail.com",
+  "industryEmail": "",
+  "instagram": "https://www.instagram.com/thesolution_oslomet/",
+  "linkedin": "https://www.linkedin.com/company/the-solution-oslomet/",
+  "discord": "https://discord.gg/8KuGjXyrEX",
+  "logo": "/images/logo/logo.svg",
+  "bylawsFile": "/documents/vedtekter-the-solution.pdf",
+  "bylawsLastRevised": "12.03.2026",
+  "formspreeSuggestionEndpoint": "",
+  "formspreeContactEndpoint": "",
+  "showStats": true,
+  "stats": [
+    { "value": "2026", "label": "Stiftet" },
+    { "value": "5", "label": "Styreverv" },
+    { "value": "Bioteknologi + kjemi", "label": "Ett studentmiljø" }
+  ]
+}

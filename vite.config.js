@@ -1,8 +1,7 @@
-import { copyFileSync, mkdirSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import { events } from "./src/data/events.js";
 
 /**
  * Vite-konfigurasjon.
@@ -19,7 +18,7 @@ const BASE = "/";
 // Pages that get their own HTML copy, so direct links and refresh work on GitHub Pages.
 const STATIC_ROUTES = ["styret", "arrangementer", "forslagsboksen", "om-oss", "kontakt"];
 
-/** Same slug rules as src/lib/events.js (kept simple; 404.html covers any mismatch). */
+/** Same slug rules as src/lib/events.js. */
 function slugify(text) {
   return String(text || "")
     .toLowerCase()
@@ -36,6 +35,7 @@ function slugify(text) {
  * GitHub Pages only serves files that exist. After the build, copy index.html to:
  *   - styret.html, kontakt.html, …        → /styret, /kontakt work directly
  *   - arrangementer/<slug>.html            → each event page works directly
+ *                                            (one per file in content/arrangementer/)
  *   - 404.html                             → any other address still loads the app,
  *                                            which then shows the right page or "404"
  */
@@ -59,10 +59,14 @@ function githubPagesRoutes() {
         copyTo(`${route}.html`);
         copyTo(`${route}/index.html`);
       });
-      (Array.isArray(events) ? events : []).forEach((event) => {
-        const slug = slugify(event?.slug || event?.title);
-        if (slug) copyTo(`arrangementer/${slug}.html`);
-      });
+      const eventsDir = "content/arrangementer";
+      const eventFiles = existsSync(eventsDir) ? readdirSync(eventsDir) : [];
+      eventFiles
+        .filter((file) => file.endsWith(".json"))
+        .forEach((file) => {
+          const slug = slugify(file.replace(/\.json$/, ""));
+          if (slug) copyTo(`arrangementer/${slug}.html`);
+        });
     },
   };
 }

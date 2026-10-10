@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:cms": "tinacms dev -c vite",
     "build": "vite build",
+    "build:cms": "tinacms build",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -16,7 +18,9 @@
     "react-router-dom": "^6.30.6"
   },
   "devDependencies": {
+    "@tinacms/cli": "^4.0.1",
     "@vitejs/plugin-react": "^5.2.0",
+    "tinacms": "^3.14.3",
     "vite": "^7.3.6"
   }
 }

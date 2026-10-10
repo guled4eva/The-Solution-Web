@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   Building2,
   Handshake,
@@ -8,6 +9,7 @@ import {
   Mic,
   Presentation,
   Send,
+  ShieldAlert,
   Sparkles,
   Store,
   Coins,
@@ -18,6 +20,7 @@ import PageHeader from "../components/PageHeader.jsx";
 import SocialLinks, { getConfiguredSocials } from "../components/SocialLinks.jsx";
 import { siteConfig } from "../data/siteConfig.js";
 import { board } from "../data/board.js";
+import { texts } from "../data/texts.js";
 import { isDev, isFilled } from "../lib/config.js";
 import { EMAIL_PATTERN } from "../lib/forms.js";
 import { useFormSubmission } from "../hooks/useFormSubmission.js";
@@ -160,6 +163,13 @@ export default function Contact() {
             <h2 className="contact-card__title">Generelle henvendelser</h2>
             <p>Spørsmål om foreningen, arrangementer eller medlemskap? Send oss en e-post.</p>
             <EmailDisplay email={siteConfig.email} placeholder="[LEGG INN E-POST]" formAvailable={configured} />
+            <div className="contact-card__notice">
+              <ShieldAlert size={20} aria-hidden="true" />
+              <p>
+                <strong>Varsling:</strong> Har du opplevd noe kritikkverdig i foreningen eller på et arrangement? Ta
+                kontakt med leder eller omsorgsansvarlig i <Link to="/styret">styret</Link>.
+              </p>
+            </div>
             {socials.length > 0 && (
               <div className="contact-card__socials">
                 <h3 className="contact-card__subtitle">Følg oss</h3>
@@ -174,18 +184,30 @@ export default function Contact() {
             </span>
             <p className="contact-card__kicker">Samarbeid og bedrifter</p>
             <h2 className="contact-card__title">For bedrifter</h2>
-            <p>
-              Ønsker bedriften din å komme i kontakt med studenter innen bioteknologi og kjemi? The Solution ønsker
-              samarbeid med bedrifter og organisasjoner som kan gi studentene våre innsikt i arbeidslivet.
-            </p>
+            <p>{texts.industryText}</p>
             <ul className="coop-list" aria-label="Mulige samarbeidsformer">
               {cooperation.map(({ label, Icon }) => (
                 <li key={label}>
-                  <Icon size={18} aria-hidden="true" />
-                  {label}
+                  {industryEmail ? (
+                    <a
+                      href={`mailto:${industryEmail}?subject=${encodeURIComponent(`Samarbeid: ${label}`)}`}
+                      className="coop-list__item"
+                    >
+                      <Icon size={18} aria-hidden="true" />
+                      <span>{label}</span>
+                      <span className="visually-hidden"> – send e-post til Industriansvarlig</span>
+                      <Mail size={16} aria-hidden="true" className="coop-list__mail" />
+                    </a>
+                  ) : (
+                    <span className="coop-list__item">
+                      <Icon size={18} aria-hidden="true" />
+                      <span>{label}</span>
+                    </span>
+                  )}
                 </li>
               ))}
             </ul>
+            {industryEmail && <p className="coop-list__hint">Trykk på det dere er interessert i, så åpnes en e-post med riktig emne.</p>}
             {industryEmail ? (
               <a
                 href={`mailto:${industryEmail}?subject=${encodeURIComponent("Samarbeid med The Solution")}`}
@@ -204,7 +226,7 @@ export default function Contact() {
                   <Mail size={18} aria-hidden="true" />
                   <span>Ta kontakt med Industriansvarlig</span>
                 </a>
-                {isDev && <p className="dev-hint">[LEGG INN E-POST TIL INDUSTRIANSVARLIG i siteConfig.js]</p>}
+                {isDev && <p className="dev-hint">[LEGG INN E-POST UNDER INNSTILLINGER PÅ /loggin]</p>}
               </>
             )}
           </div>

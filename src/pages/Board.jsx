@@ -5,6 +5,7 @@ import EmptyState from "../components/EmptyState.jsx";
 import PageHeader from "../components/PageHeader.jsx";
 import Reveal from "../components/Reveal.jsx";
 import { board } from "../data/board.js";
+import { texts } from "../data/texts.js";
 import { usePageTitle } from "../hooks/usePageTitle.js";
 
 export default function Board() {
@@ -16,7 +17,10 @@ export default function Board() {
       <PageHeader
         eyebrow="Styret"
         title="Møt styret"
-        intro="Styret i The Solution jobber for å skape et godt faglig og sosialt miljø for studentene ved Bioteknologi og kjemi."
+        intro={
+          texts.boardIntro ||
+          "Styret i The Solution jobber for å skape et godt faglig og sosialt miljø for studentene ved Bioteknologi og kjemi."
+        }
       />
 
       <section className="section" aria-label="Styremedlemmer">

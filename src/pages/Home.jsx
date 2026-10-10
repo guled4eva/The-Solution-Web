@@ -3,10 +3,12 @@ import Button from "../components/Button.jsx";
 import EventCard from "../components/EventCard.jsx";
 import EmptyState from "../components/EmptyState.jsx";
 import Logo from "../components/Logo.jsx";
+import Paragraphs from "../components/Paragraphs.jsx";
 import Reveal from "../components/Reveal.jsx";
 import SectionHeading from "../components/SectionHeading.jsx";
 import { BondDivider, HexPattern, MoleculeHero } from "../components/ScienceArt.jsx";
 import { siteConfig } from "../data/siteConfig.js";
+import { texts } from "../data/texts.js";
 import { getUpcomingEvents } from "../lib/events.js";
 import { usePageTitle } from "../hooks/usePageTitle.js";
 
@@ -59,8 +61,8 @@ export default function Home() {
               ))}
             </p>
             <p className="hero__lead">
-              The Solution skaper faglige og sosiale møteplasser for studenter ved {siteConfig.programme} på{" "}
-              {siteConfig.university}.
+              {texts.heroLead ||
+                `The Solution skaper faglige og sosiale møteplasser for studenter ved ${siteConfig.programme} på ${siteConfig.university}.`}
             </p>
             <div className="hero__actions">
               <Button to="/arrangementer" variant="accent" size="lg" icon={ArrowRight}>
@@ -89,11 +91,9 @@ export default function Home() {
               eyebrow="Hva vi gjør"
               title="Mer enn bare forelesninger"
             />
-            <p className="intro-split__text">
-              Studietiden handler om mer enn pensum. The Solution jobber for at studiet ditt skal bli bedre –{" "}
-              <strong>faglig</strong>, <strong>sosialt</strong> og med tanke på <strong>jobben du skal ha etterpå</strong>.
-              Alt vi gjør, gjør vi som frivillige studenter, for andre studenter.
-            </p>
+            <div>
+              <Paragraphs text={texts.introText} className="intro-split__text" />
+            </div>
           </div>
 
           <ul className="pillar-grid">
@@ -113,7 +113,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ---------- STATS (can be turned off in siteConfig.js) ---------- */}
+      {/* ---------- STATS (can be turned off under Innstillinger at /loggin) ---------- */}
       {siteConfig.showStats && stats.length > 0 && (
         <section className="stats" aria-label="The Solution i tall">
           <div className="container">

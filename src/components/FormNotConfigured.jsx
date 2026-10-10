@@ -3,7 +3,7 @@ import { siteConfig } from "../data/siteConfig.js";
 import { isDev, isFilled } from "../lib/config.js";
 
 /**
- * Shown when a Formspree endpoint has not been added to siteConfig.js.
+ * Shown when a Formspree endpoint has not been added in the settings (content/innstillinger/nettside.json).
  * Developers get exact instructions; visitors get an honest message and an alternative.
  */
 export default function FormNotConfigured({ configKey, focusRef }) {
@@ -11,8 +11,9 @@ export default function FormNotConfigured({ configKey, focusRef }) {
     <FormStatus type="info" title="Skjemaet er ikke aktivert ennå" focusRef={focusRef}>
       {isDev ? (
         <p>
-          <strong>For utviklere:</strong> Legg inn Formspree-adressen i <code>src/data/siteConfig.js</code> under{" "}
-          <code>{configKey}</code>. Fremgangsmåten står i README.md. Ingenting blir sendt før dette er gjort.
+          <strong>For utviklere:</strong> Legg inn Formspree-adressen på <code>/loggin</code> under Innstillinger (eller i{" "}
+          <code>content/innstillinger/nettside.json</code>, feltet{" "}
+          <code>{configKey}</code>). Fremgangsmåten står i README.md. Ingenting blir sendt før dette er gjort.
         </p>
       ) : isFilled(siteConfig.email) ? (
         <p>
