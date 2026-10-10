@@ -54,7 +54,7 @@ function doPost(e) {
     }
   } catch (err) {
     console.error(err);
-    return json_({ ok: false, error: 'server-error' });
+    return json_({ ok: false, error: 'server-error', detail: String((err && err.message) || err).slice(0, 300) });
   }
 }
 

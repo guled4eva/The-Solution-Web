@@ -106,7 +106,9 @@ export default function RegistrationForm({ event }) {
         diet: { ...diet, otherText: diet.otherText.trim() },
         _gotcha: values._gotcha,
       });
-      result = res?.ok ? { ok: true } : { ok: false, error: res?.error || "server-error" };
+      result = res?.ok
+        ? { ok: true }
+        : { ok: false, error: res?.error || "server-error", detail: [res?.error, res?.detail].filter(Boolean).join(": ") };
     } else {
       const payload = {
         _subject: `Påmelding: ${event.title} (${formatShortDate(event.date)})`,
@@ -126,7 +128,10 @@ export default function RegistrationForm({ event }) {
       setValues(empty);
       setStatus("success");
     } else {
-      setErrorText(errorTexts[result.error] || "Noe gikk galt under påmeldingen. Prøv igjen om litt.");
+      setErrorText(
+        errorTexts[result.error] ||
+          `Noe gikk galt under påmeldingen. Prøv igjen om litt.${result.detail ? ` (Feilkode: ${result.detail})` : ""}`
+      );
       setStatus("error");
     }
   };
