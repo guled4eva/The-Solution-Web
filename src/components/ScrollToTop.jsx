@@ -6,17 +6,18 @@ import { useLocation } from "react-router-dom";
  * focus to the main content, so navigation feels like a normal page load.
  */
 export default function ScrollToTop() {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
   const first = useRef(true);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    if (!hash) window.scrollTo(0, 0);
     if (first.current) {
       first.current = false;
       return;
     }
     const main = document.getElementById("hovedinnhold");
     if (main) main.focus({ preventScroll: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
   return null;

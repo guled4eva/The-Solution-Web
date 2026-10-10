@@ -92,7 +92,24 @@ export default defineConfig({
             description: "Liggende bilde, helst ca. 1200 × 675 piksler. Tomt = grafisk plassholder.",
             uploadDir: () => "arrangementer",
           },
-          { type: "string", name: "registrationLink", label: "Påmeldingslenke", description: "Tomt = ingen påmeldingsknapp" },
+          {
+            type: "boolean",
+            name: "registrationOnSite",
+            label: "Påmelding på nettsiden",
+            description: "Viser et påmeldingsskjema (navn og e-post) på arrangementssiden. Påmeldingene kommer på e-post.",
+          },
+          {
+            type: "boolean",
+            name: "registrationAskNotes",
+            label: "Spør om allergier/kommentarer i påmeldingen",
+            description: "Fint når det blir mat. Gjelder bare påmelding på nettsiden.",
+          },
+          {
+            type: "string",
+            name: "registrationLink",
+            label: "Ekstern påmeldingslenke",
+            description: "Bare hvis påmeldingen skjer et annet sted (f.eks. Google Skjema). Tomt = ingen lenke.",
+          },
           {
             type: "datetime",
             name: "registrationDeadline",
@@ -245,6 +262,12 @@ export default defineConfig({
             type: "string",
             name: "formspreeContactEndpoint",
             label: "Formspree-adresse – kontaktskjema",
+          },
+          {
+            type: "string",
+            name: "formspreeRegistrationEndpoint",
+            label: "Formspree-adresse – påmelding til arrangementer",
+            description: "Ett skjema for alle arrangementer. Arrangementets navn står i emnet på e-posten.",
           },
           { type: "boolean", name: "showStats", label: "Vis tall-seksjonen på forsiden" },
           {

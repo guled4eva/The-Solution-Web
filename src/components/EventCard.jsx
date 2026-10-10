@@ -2,15 +2,15 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Clock, MapPin } from "lucide-react";
 import CategoryBadge from "./CategoryBadge.jsx";
 import EventImage from "./EventImage.jsx";
-import { dateParts, formatLongDate, isPast } from "../lib/dates.js";
+import { dateParts, formatLongDate } from "../lib/dates.js";
+import { getRegistration } from "../lib/events.js";
 import { isFilled } from "../lib/config.js";
 
 /** Event card used on the home page and the events page. */
 export default function EventCard({ event, past = false, headingLevel = 3 }) {
   const Heading = `h${headingLevel}`;
   const parts = dateParts(event.date);
-  const registrationOpen =
-    !past && isFilled(event.registrationLink) && !(isFilled(event.registrationDeadline) && isPast(event.registrationDeadline));
+  const registration = past ? { open: false } : getRegistration(event);
 
   return (
     <article className={`event-card ${past ? "event-card--past" : ""}`}>
@@ -63,7 +63,7 @@ export default function EventCard({ event, past = false, headingLevel = 3 }) {
           <span className="event-card__more" aria-hidden="true">
             Les mer <ArrowRight size={16} />
           </span>
-          {registrationOpen && (
+          {registration.open && registration.mode === "link" && (
             <a
               href={event.registrationLink}
               target="_blank"
@@ -73,6 +73,12 @@ export default function EventCard({ event, past = false, headingLevel = 3 }) {
               Meld deg på
               <span className="visually-hidden"> til {event.title} (åpnes i ny fane)</span>
             </a>
+          )}
+          {registration.open && registration.mode === "onsite" && (
+            <Link to={`/arrangementer/${event.slug}#pamelding`} className="btn btn--accent btn--sm event-card__register">
+              Meld deg på
+              <span className="visually-hidden"> til {event.title}</span>
+            </Link>
           )}
         </div>
       </div>

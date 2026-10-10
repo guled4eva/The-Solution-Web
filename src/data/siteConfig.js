@@ -32,6 +32,7 @@ const defaults = {
   bylawsLastRevised: "12.03.2026",
   formspreeSuggestionEndpoint: "",
   formspreeContactEndpoint: "",
+  formspreeRegistrationEndpoint: "",
   showStats: true,
   stats: [],
 };

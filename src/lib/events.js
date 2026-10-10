@@ -1,5 +1,5 @@
 import { events as rawEvents } from "../data/events.js";
-import { isUpcomingDate, parseLocalDate } from "./dates.js";
+import { isPast, isUpcomingDate, parseLocalDate } from "./dates.js";
 import { isFilled } from "./config.js";
 
 export const CATEGORIES = ["Sosialt", "Faglig", "Bedrift", "Generalforsamling", "Annet"];
@@ -62,4 +62,21 @@ export function getPastEvents() {
 
 export function getEventBySlug(slug) {
   return allEvents.find((e) => e.slug === slug);
+}
+
+/**
+ * How people sign up for an event:
+ *   mode "onsite" → form on the event page (registrationOnSite is on)
+ *   mode "link"   → button to an external registration link
+ *   mode null     → no registration
+ * `open` is false for past events and after the registration deadline.
+ */
+export function getRegistration(event) {
+  const upcoming = isUpcomingDate(event.date);
+  const hasDeadline = isFilled(event.registrationDeadline);
+  const deadlinePassed = hasDeadline && isPast(event.registrationDeadline);
+  let mode = null;
+  if (event.registrationOnSite) mode = "onsite";
+  else if (isFilled(event.registrationLink)) mode = "link";
+  return { mode, upcoming, hasDeadline, deadlinePassed, open: Boolean(mode) && upcoming && !deadlinePassed };
 }
