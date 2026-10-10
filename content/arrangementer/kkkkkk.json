@@ -2,6 +2,8 @@
   "title": "kkkkkk",
   "date": "2026-10-21T20:52:19.013Z",
   "category": "Sosialt",
+  "registrationOnSite": true,
+  "registrationAskNotes": true,
   "registrationDeadline": "2026-10-12T20:52:21.090Z",
   "placeholder": false
 }
