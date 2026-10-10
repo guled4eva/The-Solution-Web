@@ -1,8 +1,8 @@
 {
   "members": [
     {
-      "name": "[Navn kommer]",
       "role": "Leder",
+      "name": "Julie Sofie Sandvik Høve",
       "image": "",
       "description": "Leder styret og er foreningens ansikt utad. Har hovedansvaret for at styret jobber i tråd med formålet til The Solution.",
       "responsibilities": [
@@ -11,12 +11,12 @@
         "Overordnet ansvar for styrets arbeid"
       ],
       "email": "",
-      "linkedin": "",
+      "linkedin": "https://www.linkedin.com/in/julie-sofie-sandvik-høve-718400373/?isSelfProfile=false",
       "placeholder": true
     },
     {
-      "name": "[Navn kommer]",
       "role": "Nestleder",
+      "name": "[Navn kommer]",
       "image": "",
       "description": "Lederens høyre hånd, og trer inn som leder når lederen ikke er til stede.",
       "responsibilities": [
@@ -28,8 +28,8 @@
       "placeholder": true
     },
     {
-      "name": "[Navn kommer]",
       "role": "Økonomiansvarlig",
+      "name": "[Navn kommer]",
       "image": "",
       "description": "Holder styr på økonomien, slik at foreningen kan bruke pengene på det som betyr noe for studentene.",
       "responsibilities": [
@@ -42,8 +42,8 @@
       "placeholder": true
     },
     {
-      "name": "[Navn kommer]",
       "role": "Industriansvarlig",
+      "name": "[Navn kommer]",
       "image": "",
       "description": "Bindeleddet mellom foreningen og næringslivet – sørger for at studentene møter bedriftene de en dag kan jobbe for.",
       "responsibilities": [
@@ -56,8 +56,8 @@
       "placeholder": true
     },
     {
-      "name": "[Navn kommer]",
       "role": "Omsorgsansvarlig",
+      "name": "[Navn kommer]",
       "image": "",
       "description": "Jobber for at alle skal trives – både faglig og sosialt – og sørger for at studentene får med seg det som skjer.",
       "responsibilities": [
