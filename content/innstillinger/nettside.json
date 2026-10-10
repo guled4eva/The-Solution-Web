@@ -14,10 +14,20 @@
   "bylawsLastRevised": "12.03.2026",
   "formspreeSuggestionEndpoint": "",
   "formspreeContactEndpoint": "",
+  "formspreeRegistrationEndpoint": "https://formspree.io/f/mrpekyrd",
   "showStats": true,
   "stats": [
-    { "value": "2026", "label": "Stiftet" },
-    { "value": "5", "label": "Styreverv" },
-    { "value": "Bioteknologi + kjemi", "label": "Ett studentmiljø" }
+    {
+      "value": "2026",
+      "label": "Stiftet"
+    },
+    {
+      "value": "5",
+      "label": "Styreverv"
+    },
+    {
+      "value": "Bioteknologi + kjemi",
+      "label": "Ett studentmiljø"
+    }
   ]
 }
