@@ -66,7 +66,10 @@ function githubPagesRoutes() {
         .filter((file) => file.endsWith(".json"))
         .forEach((file) => {
           const slug = slugify(file.replace(/\.json$/, ""));
-          if (slug) copyTo(`arrangementer/${slug}.html`);
+          if (slug) {
+            copyTo(`arrangementer/${slug}.html`);
+            copyTo(`admin/${slug}.html`);
+          }
         });
     },
   };

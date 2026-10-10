@@ -467,6 +467,98 @@ textarea.field__control--short {
 .admin-table tr:last-child td {
   border-bottom: 0;
 }
+.admin__back {
+  margin-bottom: 0.75rem;
+  font-size: var(--text-sm);
+}
+.admin-cards {
+  list-style: none;
+  display: grid;
+  gap: 1rem;
+}
+.admin-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 1rem 1.5rem;
+  padding: 1.25rem 1.5rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-large);
+  box-shadow: var(--shadow-small);
+  color: var(--color-text);
+  text-decoration: none;
+  transition:
+    transform var(--duration) var(--ease),
+    box-shadow var(--duration) var(--ease),
+    border-color var(--duration) var(--ease);
+}
+.admin-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+  border-color: var(--color-primary);
+  text-decoration: none;
+}
+.admin-card__title {
+  font-size: var(--text-lg);
+}
+.admin-card__diet {
+  margin-top: 0.4rem;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+.admin-card__count {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 80px;
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--radius-medium);
+  background: var(--color-primary);
+  color: #fff;
+}
+.admin-card__number {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  line-height: 1;
+}
+.admin-card__label {
+  font-size: var(--text-xs);
+  color: var(--color-text-inverse-muted);
+}
+.admin-card__arrow {
+  color: var(--color-primary);
+}
+@media (max-width: 599px) {
+  .admin-card {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .admin-card__arrow {
+    display: none;
+  }
+}
+.admin-section-title {
+  margin: 1.5rem 0 0.75rem;
+  font-size: var(--text-lg);
+}
+.admin-event__foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--color-border);
+}
+.admin-event__retention {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
 .admin-simple-list {
   margin-top: 1.5rem;
 }

@@ -38,6 +38,7 @@ export default function App() {
           <Route path="/kontakt" element={<Contact />} />
           <Route path="/loggin/*" element={<LoginUnavailable />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/:slug" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

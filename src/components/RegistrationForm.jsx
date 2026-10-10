@@ -5,7 +5,7 @@ import FormStatus from "./FormStatus.jsx";
 import { siteConfig } from "../data/siteConfig.js";
 import { isValidFormspreeEndpoint } from "../lib/config.js";
 import { EMAIL_PATTERN, submitToFormspree } from "../lib/forms.js";
-import { formatShortDate } from "../lib/dates.js";
+import { formatShortDate, parseLocalDate } from "../lib/dates.js";
 import { DIET_OPTIONS, callScript, dietText, isValidScriptUrl } from "../lib/registrations.js";
 
 const emptyDiet = { halal: false, vegan: false, nuts: false, other: false, otherText: "" };
@@ -99,6 +99,7 @@ export default function RegistrationForm({ event }) {
         eventSlug: event.slug,
         eventTitle: event.title,
         eventDate: formatShortDate(event.date),
+        eventDateIso: parseLocalDate(event.date)?.toISOString() || "",
         deadline: event.registrationDeadline || "",
         name: values.name.trim(),
         email: values.email.trim(),

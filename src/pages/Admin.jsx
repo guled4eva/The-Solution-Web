@@ -1,20 +1,42 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Copy, Download, KeyRound, Loader2, LogOut, RefreshCw, Trash2, Users } from "lucide-react";
+import { Link, useParams } from "react-router-dom";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Clock,
+  Copy,
+  Download,
+  KeyRound,
+  Loader2,
+  LogOut,
+  RefreshCw,
+  Trash2,
+  Users,
+} from "lucide-react";
 import FormStatus from "../components/FormStatus.jsx";
 import { siteConfig } from "../data/siteConfig.js";
 import { allEvents } from "../lib/events.js";
-import { formatDeadline, formatLongDate, isPast, parseLocalDate } from "../lib/dates.js";
-import { isFilled } from "../lib/config.js";
+import { formatDeadline, formatLongDate, formatShortDate, isPast, parseLocalDate } from "../lib/dates.js";
 import { DIET_OPTIONS, callScript, dietText, isValidScriptUrl } from "../lib/registrations.js";
 import { usePageTitle } from "../hooks/usePageTitle.js";
 import SimpleAdmin from "./SimpleAdmin.jsx";
 
+/*
+ * /admin            → overview: one card per event with number of sign-ups
+ * /admin/:slug      → one event: count, totals per food choice, list of names
+ *
+ * Data comes from the Google Apps Script (google-apps-script/Pamelding.gs).
+ * The password is checked by the script – it is never stored in the website code.
+ * Sign-ups are deleted automatically by the script 30 days after the event.
+ */
+
 const SESSION_KEY = "ts-admin-password";
+const DELETE_AFTER_DAYS = 30;
 
 const errorTexts = {
   unauthorized: "Feil passord.",
   "too-many-attempts": "For mange feil forsøk. Vent 10 minutter og prøv igjen.",
-  "no-password-configured": "Passordet er ikke satt i Google Apps Script ennå (ADMIN_PASSWORD). Se README.",
+  "no-password-configured": "Passordet er ikke satt i Google Apps Script ennå (ADMIN_PASSWORD).",
   network: "Fikk ikke kontakt med Google. Sjekk internettforbindelsen.",
 };
 
@@ -34,7 +56,7 @@ function writeSession(value) {
   }
 }
 
-/** Keeps search engines away from the admin page. */
+/** Keeps search engines away from the admin pages. */
 function useNoIndex() {
   useEffect(() => {
     const meta = document.createElement("meta");
@@ -43,6 +65,20 @@ function useNoIndex() {
     document.head.appendChild(meta);
     return () => meta.remove();
   }, []);
+}
+
+function formatTimestamp(iso) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleString("nb-NO", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+
+function deletionDate(group) {
+  const base = parseLocalDate(group.event?.date) || (group.rows[0]?.eventDateIso ? new Date(group.rows[0].eventDateIso) : null);
+  if (!base || Number.isNaN(base.getTime())) return "";
+  const d = new Date(base);
+  d.setDate(d.getDate() + DELETE_AFTER_DAYS);
+  return formatShortDate(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
 }
 
 function toCsv(rows) {
@@ -56,13 +92,7 @@ function toCsv(rows) {
   return "﻿" + [header.map(esc).join(";"), ...lines].join("\r\n");
 }
 
-function formatTimestamp(iso) {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleString("nb-NO", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-}
-
-/** Groups registrations by event and adds events with on-site sign-up but no registrations yet. */
+/** Groups sign-ups per event, including events with sign-up turned on but no sign-ups yet. */
 function groupByEvent(registrations) {
   const groups = new Map();
   allEvents
@@ -75,7 +105,8 @@ function groupByEvent(registrations) {
     }
     groups.get(r.eventSlug).rows.push(r);
   });
-  const dateOf = (g) => parseLocalDate(g.event?.date)?.getTime() ?? 0;
+  const dateOf = (g) =>
+    parseLocalDate(g.event?.date)?.getTime() ?? (g.rows[0]?.eventDateIso ? new Date(g.rows[0].eventDateIso).getTime() : 0);
   const now = Date.now();
   // Upcoming first (soonest first), then past (newest first)
   return [...groups.values()].sort((a, b) => {
@@ -88,13 +119,71 @@ function groupByEvent(registrations) {
   });
 }
 
-function EventGroup({ group, onDelete, deleting }) {
-  const { rows, event } = group;
-  const counts = Object.fromEntries(DIET_OPTIONS.map((o) => [o.key, rows.filter((r) => r[o.key]).length]));
-  const others = rows.filter((r) => r.other && r.otherText);
+function dietCounts(rows) {
+  return Object.fromEntries(DIET_OPTIONS.map((o) => [o.key, rows.filter((r) => r[o.key]).length]));
+}
+
+function StatusPill({ event }) {
   const deadline = event?.registrationDeadline;
-  const closed = deadline ? isPast(deadline) : false;
+  if (!deadline) return null;
+  const closed = isPast(deadline);
+  return (
+    <span className={`admin-pill ${closed ? "admin-pill--closed" : "admin-pill--open"}`}>
+      {closed ? "Påmelding stengt" : `Åpen til ${formatDeadline(deadline)}`}
+    </span>
+  );
+}
+
+// ------------------------------------------------------------------
+// Overview: /admin
+// ------------------------------------------------------------------
+function Overview({ groups }) {
+  if (groups.length === 0) {
+    return (
+      <p className="admin-empty">
+        Ingen arrangementer med påmelding ennå. Slå på «Påmelding på nettsiden» for et arrangement på /loggin.
+      </p>
+    );
+  }
+  return (
+    <ul className="admin-cards">
+      {groups.map((g) => {
+        const counts = dietCounts(g.rows);
+        return (
+          <li key={g.slug}>
+            <Link to={`/admin/${g.slug}`} className="admin-card">
+              <div className="admin-card__main">
+                <h2 className="admin-card__title">{g.title}</h2>
+                <p className="admin-event__meta">
+                  {g.event?.date ? formatLongDate(g.event.date) : "Arrangementet er fjernet fra nettsiden"}{" "}
+                  <StatusPill event={g.event} />
+                </p>
+                <p className="admin-card__diet">
+                  {DIET_OPTIONS.map((o) => `${o.label}: ${counts[o.key]}`).join(" · ")}
+                </p>
+              </div>
+              <div className="admin-card__count">
+                <span className="admin-card__number">{g.rows.length}</span>
+                <span className="admin-card__label">påmeldt</span>
+              </div>
+              <ArrowRight size={20} aria-hidden="true" className="admin-card__arrow" />
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+// ------------------------------------------------------------------
+// One event: /admin/:slug
+// ------------------------------------------------------------------
+function EventDetail({ group, onDelete, deleting }) {
+  const { rows, event } = group;
+  const counts = dietCounts(rows);
+  const others = rows.filter((r) => r.other && r.otherText);
   const [copied, setCopied] = useState(false);
+  const deleteOn = deletionDate(group);
 
   const download = () => {
     const blob = new Blob([toCsv(rows)], { type: "text/csv;charset=utf-8" });
@@ -117,22 +206,15 @@ function EventGroup({ group, onDelete, deleting }) {
   };
 
   return (
-    <section className="admin-event" aria-labelledby={`admin-${group.slug}`}>
+    <section className="admin-event" aria-labelledby="admin-event-title">
       <header className="admin-event__head">
         <div>
-          <h2 id={`admin-${group.slug}`} className="admin-event__title">
+          <h2 id="admin-event-title" className="admin-event__title">
             {group.title}
           </h2>
           <p className="admin-event__meta">
-            {event?.date ? formatLongDate(event.date) : "Arrangementet finnes ikke lenger på nettsiden"}
-            {deadline && (
-              <>
-                {" · "}
-                <span className={`admin-pill ${closed ? "admin-pill--closed" : "admin-pill--open"}`}>
-                  {closed ? "Påmelding stengt" : `Åpen til ${formatDeadline(deadline)}`}
-                </span>
-              </>
-            )}
+            {event?.date ? formatLongDate(event.date) : "Arrangementet er fjernet fra nettsiden"}{" "}
+            <StatusPill event={event} />
           </p>
         </div>
         <div className="admin-event__actions">
@@ -142,20 +224,13 @@ function EventGroup({ group, onDelete, deleting }) {
           <button type="button" className="btn btn--secondary btn--sm" onClick={copyEmails} disabled={!rows.length}>
             <Copy size={16} aria-hidden="true" /> <span>{copied ? "Kopiert!" : "Kopier e-poster"}</span>
           </button>
-          <button
-            type="button"
-            className="btn btn--ghost btn--sm admin-event__delete"
-            onClick={() => onDelete(group)}
-            disabled={!rows.length || deleting}
-          >
-            <Trash2 size={16} aria-hidden="true" /> <span>Slett påmeldinger</span>
-          </button>
         </div>
       </header>
 
+      {/* 1. How many are coming  2. Food choices */}
       <dl className="admin-stats">
         <div className="admin-stat admin-stat--total">
-          <dt>Påmeldte</dt>
+          <dt>Kommer</dt>
           <dd>{rows.length}</dd>
         </div>
         {DIET_OPTIONS.map((o) => (
@@ -179,6 +254,8 @@ function EventGroup({ group, onDelete, deleting }) {
         </div>
       )}
 
+      {/* 3. List of names */}
+      <h3 className="admin-section-title">Hvem kommer</h3>
       {rows.length > 0 ? (
         <div className="admin-table-wrap">
           <table className="admin-table">
@@ -209,11 +286,30 @@ function EventGroup({ group, onDelete, deleting }) {
       ) : (
         <p className="admin-empty">Ingen påmeldinger ennå.</p>
       )}
+
+      <footer className="admin-event__foot">
+        {deleteOn && (
+          <p className="admin-event__retention">
+            <Clock size={15} aria-hidden="true" /> Påmeldingene slettes automatisk {deleteOn} (1 måned etter
+            arrangementet).
+          </p>
+        )}
+        <button
+          type="button"
+          className="btn btn--ghost btn--sm admin-event__delete"
+          onClick={() => onDelete(group)}
+          disabled={!rows.length || deleting}
+        >
+          <Trash2 size={16} aria-hidden="true" /> <span>Slett nå</span>
+        </button>
+      </footer>
     </section>
   );
 }
 
-/** /admin: full overview with Google Apps Script, otherwise the simple e-mail/password version. */
+// ------------------------------------------------------------------
+// Page
+// ------------------------------------------------------------------
 export default function Admin() {
   usePageTitle("Admin – påmeldinger");
   useNoIndex();
@@ -221,8 +317,8 @@ export default function Admin() {
 }
 
 function ScriptAdmin() {
+  const { slug } = useParams();
   const scriptUrl = siteConfig.registrationScriptUrl;
-  const configured = isValidScriptUrl(scriptUrl);
 
   const [password, setPassword] = useState(readSession);
   const [input, setInput] = useState("");
@@ -234,7 +330,7 @@ function ScriptAdmin() {
 
   const load = useCallback(
     async (pw) => {
-      if (!configured || !pw) return;
+      if (!pw) return;
       setLoading(true);
       setError("");
       const res = await callScript(scriptUrl, { action: "list", password: pw });
@@ -254,7 +350,7 @@ function ScriptAdmin() {
         }
       }
     },
-    [configured, scriptUrl]
+    [scriptUrl]
   );
 
   useEffect(() => {
@@ -263,6 +359,7 @@ function ScriptAdmin() {
   }, []);
 
   const groups = useMemo(() => (registrations ? groupByEvent(registrations) : []), [registrations]);
+  const current = slug ? groups.find((g) => g.slug === slug) : null;
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -278,7 +375,7 @@ function ScriptAdmin() {
 
   const handleDelete = async (group) => {
     const ok = window.confirm(
-      `Slette alle ${group.rows.length} påmeldinger til «${group.title}»?\n\nDette kan ikke angres. Last gjerne ned CSV først.`
+      `Slette alle ${group.rows.length} påmeldinger til «${group.title}» nå?\n\nDette kan ikke angres. Last gjerne ned CSV først.`
     );
     if (!ok) return;
     setDeleting(true);
@@ -295,10 +392,16 @@ function ScriptAdmin() {
       <div className="container">
         <div className="admin__top">
           <div>
-            <p className="eyebrow">
-              <span className="eyebrow__dot" aria-hidden="true" />
-              Bare for styret
-            </p>
+            {slug && loggedIn ? (
+              <Link to="/admin" className="text-link admin__back">
+                <ArrowLeft size={16} aria-hidden="true" /> Alle arrangementer
+              </Link>
+            ) : (
+              <p className="eyebrow">
+                <span className="eyebrow__dot" aria-hidden="true" />
+                Bare for styret
+              </p>
+            )}
             <h1 className="admin__title">Påmeldinger</h1>
           </div>
           {loggedIn && (
@@ -314,14 +417,7 @@ function ScriptAdmin() {
           )}
         </div>
 
-        {!configured ? (
-          <FormStatus type="info" title="Påmeldingsoversikten er ikke satt opp ennå">
-            <p>
-              Legg inn adressen til Google Apps Script på <code>/loggin</code> under Innstillinger → «Påmelding – Google
-              Apps Script-adresse». Fremgangsmåten står i README.md, under «Påmelding og /admin».
-            </p>
-          </FormStatus>
-        ) : !loggedIn ? (
+        {!loggedIn ? (
           <form className="admin-login form-card" onSubmit={handleLogin}>
             <span className="admin-login__icon" aria-hidden="true">
               <KeyRound size={26} />
@@ -357,22 +453,29 @@ function ScriptAdmin() {
                 <p>{error}</p>
               </FormStatus>
             )}
-            <p className="admin__updated">
-              <Users size={16} aria-hidden="true" /> {registrations.length} påmeldinger totalt
-              {updatedAt && ` · oppdatert ${updatedAt.toLocaleTimeString("nb-NO", { hour: "2-digit", minute: "2-digit" })}`}
-            </p>
-            {groups.length === 0 ? (
-              <p className="admin-empty">
-                Ingen arrangementer med påmelding på nettsiden ennå. Slå på «Påmelding på nettsiden» for et arrangement
-                på /loggin.
-              </p>
+            {slug ? (
+              current ? (
+                <EventDetail group={current} onDelete={handleDelete} deleting={deleting} />
+              ) : (
+                <FormStatus type="info" title="Fant ingen påmeldinger for dette arrangementet">
+                  <p>
+                    Enten har ingen meldt seg på ennå, påmelding er ikke slått på, eller påmeldingene er slettet.{" "}
+                    <Link to="/admin">Se alle arrangementer</Link>.
+                  </p>
+                </FormStatus>
+              )
             ) : (
-              groups.map((g) => <EventGroup key={g.slug} group={g} onDelete={handleDelete} deleting={deleting} />)
-            )}
-            {isFilled(siteConfig.email) && (
-              <p className="admin__note">
-                Når påmeldingsfristen har gått ut, sendes en oppsummering automatisk på e-post.
-              </p>
+              <>
+                <p className="admin__updated">
+                  <Users size={16} aria-hidden="true" /> {registrations.length} påmeldinger totalt
+                  {updatedAt && ` · oppdatert ${updatedAt.toLocaleTimeString("nb-NO", { hour: "2-digit", minute: "2-digit" })}`}
+                </p>
+                <Overview groups={groups} />
+                <p className="admin__note">
+                  Oppsummering sendes på e-post når påmeldingsfristen går ut. Påmeldinger slettes automatisk 1 måned
+                  etter arrangementet.
+                </p>
+              </>
             )}
           </>
         )}

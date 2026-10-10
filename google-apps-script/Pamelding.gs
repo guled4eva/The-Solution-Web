@@ -3,7 +3,8 @@
  *  PÅMELDING – The Solution
  *  Google Apps Script som tar imot påmeldinger fra nettsiden,
  *  lagrer dem i et Google-regneark, viser dem på /admin og sender
- *  en oppsummering på e-post når påmeldingsfristen har gått ut.
+ *  en oppsummering på e-post når påmeldingsfristen har gått ut, og
+ *  sletter påmeldingene automatisk 1 måned etter arrangementet.
  *
  *  Oppsett: se README.md, avsnittet «Påmelding og /admin».
  *  Kort fortalt:
@@ -25,9 +26,10 @@
 const SHEET_NAME = 'Påmeldinger';
 const HEADERS = [
   'Tidspunkt', 'Arrangement-ID', 'Arrangement', 'Dato', 'Påmeldingsfrist',
-  'Navn', 'E-post', 'Halal', 'Vegansk', 'Nøtteallergi', 'Annet', 'Annet (tekst)', 'ID',
+  'Navn', 'E-post', 'Halal', 'Vegansk', 'Nøtteallergi', 'Annet', 'Annet (tekst)', 'ID', 'Arrangementsdato',
 ];
 const MAX_FAILED_LOGINS = 10; // per 10 minutter
+const DELETE_AFTER_DAYS = 30; // påmeldinger slettes så mange dager etter arrangementet
 
 // ------------------------------------------------------------
 // Inngang fra nettsiden
@@ -97,6 +99,7 @@ function register_(b) {
       diet.other ? 'Ja' : '',
       diet.other ? clean_(diet.otherText, 500) : '',
       id,
+      validDate_(b.eventDateIso),
     ]);
   } finally {
     lock.releaseLock();
@@ -163,11 +166,45 @@ function rowToObject_(r) {
     other: r[10] === 'Ja',
     otherText: String(r[11] || ''),
     id: String(r[12] || ''),
+    eventDateIso: iso(r[13]),
   };
 }
 
 // ------------------------------------------------------------
-// Oppsummering på e-post når fristen har gått ut (kjøres hver time)
+// Kjøres automatisk hver time (satt opp av setup)
+// ------------------------------------------------------------
+function hourly() {
+  sendDeadlineSummaries();
+  deleteOldRegistrations();
+}
+
+/** Sletter påmeldinger når arrangementet er mer enn DELETE_AFTER_DAYS dager siden. */
+function deleteOldRegistrations() {
+  const limit = Date.now() - DELETE_AFTER_DAYS * 24 * 3600 * 1000;
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const sh = sheet_();
+    const values = sh.getDataRange().getValues();
+    let deleted = 0;
+    for (let i = values.length - 1; i >= 1; i--) {
+      // Arrangementsdato, eller (for eldre rader uten dato) tidspunktet for påmeldingen + 60 dager
+      const eventDate = values[i][13] instanceof Date ? values[i][13] : null;
+      const fallback = values[i][0] instanceof Date ? new Date(values[i][0].getTime() + 30 * 24 * 3600 * 1000) : null;
+      const when = eventDate || fallback;
+      if (when && when.getTime() < limit) {
+        sh.deleteRow(i + 1);
+        deleted++;
+      }
+    }
+    return deleted;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// ------------------------------------------------------------
+// Oppsummering på e-post når fristen har gått ut
 // ------------------------------------------------------------
 function sendDeadlineSummaries() {
   const props = PropertiesService.getScriptProperties();
@@ -219,9 +256,9 @@ function summaryText_(regs) {
 function setup() {
   sheet_();
   ScriptApp.getProjectTriggers()
-    .filter((t) => t.getHandlerFunction() === 'sendDeadlineSummaries')
+    .filter((t) => ['sendDeadlineSummaries', 'hourly'].indexOf(t.getHandlerFunction()) !== -1)
     .forEach((t) => ScriptApp.deleteTrigger(t));
-  ScriptApp.newTrigger('sendDeadlineSummaries').timeBased().everyHours(1).create();
+  ScriptApp.newTrigger('hourly').timeBased().everyHours(1).create();
   if (!PropertiesService.getScriptProperties().getProperty('ADMIN_PASSWORD')) {
     console.warn('Husk å legge inn ADMIN_PASSWORD under Prosjektinnstillinger → Skriptegenskaper.');
   }
@@ -240,6 +277,11 @@ function sheet_() {
     sh.setFrozenRows(1);
   }
   return sh;
+}
+
+function validDate_(v) {
+  const d = v ? new Date(v) : null;
+  return d && !isNaN(d) ? d : '';
 }
 
 function clean_(v, max) {

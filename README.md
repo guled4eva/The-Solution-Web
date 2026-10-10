@@ -144,8 +144,10 @@ Formspree-adressene er ikke hemmelige – de er laget for å ligge på nettsider
 Påmeldinger lagres i et **Google-regneark på foreningens Gmail-konto**. Et lite Google Apps Script tar imot påmeldingene fra nettsiden, og gjør tre ting:
 
 - lagrer hver påmelding som en rad i regnearket
-- viser alle påmeldinger, sortert per arrangement og med antall Halal/Vegansk/Nøtteallergi/Annet, på **https://www.thesolutionoslomet.no/admin** (passordbeskyttet)
+- viser alle arrangementer med antall påmeldte på **https://www.thesolutionoslomet.no/admin** (passordbeskyttet)
+- har en egen side per arrangement, f.eks. **/admin/generalforsamling-2026**, med (1) hvor mange som kommer, (2) antall per matvalg (Halal/Vegansk/Nøtteallergi/Annet) og (3) navnelisten
 - sender en **oppsummering på e-post** når påmeldingsfristen for et arrangement har gått ut
+- **sletter påmeldingene automatisk 1 måned etter arrangementet** (kan også slettes med en gang med «Slett nå»)
 
 Oppsett (én gang, ca. 10 minutter, logget inn som `thesolution.oslomet@gmail.com`):
 
@@ -165,7 +167,9 @@ Oppsett (én gang, ca. 10 minutter, logget inn som `thesolution.oslomet@gmail.co
 
 **Endrer noen skriptet senere**, må det distribueres på nytt: **Distribuer → Administrer distribusjoner → blyanten → Versjon: Ny versjon → Distribuer**. Adressen forblir den samme.
 
-**Personvern:** Mat- og allergisvar (og særlig Halal) kan være sensitive opplysninger. Bare styret skal ha passordet til /admin og tilgang til regnearket. Slett påmeldingene når arrangementet er over – det kan gjøres med knappen **Slett påmeldinger** på /admin. Bytt `ADMIN_PASSWORD` når styret byttes.
+**Personvern:** Mat- og allergisvar (og særlig Halal) kan være sensitive opplysninger. Bare styret skal ha passordet til /admin og tilgang til regnearket. Påmeldingene slettes automatisk 1 måned etter arrangementet. Bytt `ADMIN_PASSWORD` når styret byttes.
+
+Når Google Apps Script er satt opp, brukes **passordet fra Google** (`ADMIN_PASSWORD`) på /admin. Feltene «/admin – e-post» og «/admin – passord» i panelet brukes bare så lenge Google ikke er satt opp.
 
 Uten Apps Script-adressen faller skjemaet tilbake til Formspree (hvis den er satt): da kommer én e-post per påmelding, men /admin-oversikten fungerer ikke.
 
