@@ -16,7 +16,7 @@ import react from "@vitejs/plugin-react";
 const BASE = "/";
 
 // Pages that get their own HTML copy, so direct links and refresh work on GitHub Pages.
-const STATIC_ROUTES = ["styret", "arrangementer", "forslagsboksen", "om-oss", "kontakt"];
+const STATIC_ROUTES = ["styret", "arrangementer", "forslagsboksen", "om-oss", "kontakt", "admin"];
 
 /** Same slug rules as src/lib/events.js. */
 function slugify(text) {

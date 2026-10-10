@@ -15,6 +15,7 @@
   "formspreeSuggestionEndpoint": "",
   "formspreeContactEndpoint": "",
   "formspreeRegistrationEndpoint": "https://formspree.io/f/mrpekyrd",
+  "registrationScriptUrl": "",
   "showStats": true,
   "stats": [
     {

@@ -33,6 +33,7 @@ const defaults = {
   formspreeSuggestionEndpoint: "",
   formspreeContactEndpoint: "",
   formspreeRegistrationEndpoint: "",
+  registrationScriptUrl: "",
   showStats: true,
   stats: [],
 };

@@ -47,7 +47,7 @@ Redigerer du en JSON-fil for hånd: hold på anførselstegnene `"…"` og kommae
 - Hvert arrangement er én fil i `content/arrangementer/`. **Filnavnet blir adressen**: `julebord-2026.json` → `/arrangementer/julebord-2026`. I panelet lages filnavnet automatisk fra tittelen.
 - Nettsiden sorterer selv: arrangementer fra og med i dag står under «Kommende arrangementer» (tidligste først), eldre arrangementer under «Tidligere arrangementer» (nyeste først). Forsiden viser de tre neste.
 - **Bilde** er valgfritt. Uten bilde vises en grafisk plassholder i kategorifargen. Bruk liggende bilder (ca. 1200 × 675 piksler) og hold dem under ca. 300 kB – komprimer gjerne på <https://squoosh.app>.
-- **Påmelding på nettsiden:** slå på **Påmelding på nettsiden**, så får arrangementssiden et skjema med navn og e-post. Slå på **Spør om allergier/kommentarer** når det blir mat. Påmeldingene kommer på e-post via Formspree (se under), med arrangementets navn i emnet.
+- **Påmelding på nettsiden:** slå på **Påmelding på nettsiden**, så får arrangementssiden et skjema med navn og e-post. Slå på **Spør om mat og allergier** når det blir mat: da kan deltakerne krysse av for Halal, Vegansk, Nøtteallergi og Annet (med tekst). Påmeldingene lagres i foreningens Google-regneark og vises på **/admin** – se [Påmelding og /admin](#påmelding-og-admin).
 - **Ekstern påmelding:** skjer påmeldingen et annet sted (f.eks. Google Skjema), lim inn lenken i **Ekstern påmeldingslenke** i stedet.
 - Når **påmeldingsfristen** har passert, stenges påmeldingen automatisk. Nettsiden kan ikke telle påmeldte eller stenge ved fullt – det ser dere i e-posten/Formspree.
 - **Kategori** er én av: Sosialt, Faglig, Bedrift, Generalforsamling, Annet.
@@ -132,12 +132,42 @@ Inntil dette er gjort, sier skjemaene tydelig fra om at de ikke er aktivert, og 
 4. Lim dem inn under **Innstillinger** i panelet (eller i `content/innstillinger/nettside.json`):
    - **Formspree-adresse – Forslagsboksen**
    - **Formspree-adresse – kontaktskjema**
-   - **Formspree-adresse – påmelding til arrangementer** (ett skjema for alle arrangementer)
+   - (Påmelding til arrangementer bruker Google Apps Script – se neste avsnitt. Formspree-feltet for påmelding er bare en reserve.)
 5. Send gjerne inn en test for å sjekke at det kommer frem. Første gang må dere kanskje bekrefte e-postadressen i Formspree.
 
 **Anonyme forslag:** Når «Jeg ønsker å sende inn forslaget anonymt» er huket av, sendes navn og e-post **ikke** med.
 
 Formspree-adressene er ikke hemmelige – de er laget for å ligge på nettsider.
+
+## Påmelding og /admin
+
+Påmeldinger lagres i et **Google-regneark på foreningens Gmail-konto**. Et lite Google Apps Script tar imot påmeldingene fra nettsiden, og gjør tre ting:
+
+- lagrer hver påmelding som en rad i regnearket
+- viser alle påmeldinger, sortert per arrangement og med antall Halal/Vegansk/Nøtteallergi/Annet, på **https://www.thesolutionoslomet.no/admin** (passordbeskyttet)
+- sender en **oppsummering på e-post** når påmeldingsfristen for et arrangement har gått ut
+
+Oppsett (én gang, ca. 10 minutter, logget inn som `thesolution.oslomet@gmail.com`):
+
+1. Gå til <https://sheets.google.com> og lag et nytt, tomt regneark. Kall det f.eks. «Påmeldinger – The Solution».
+2. I regnearket: **Utvidelser → Apps Script**.
+3. Slett alt i editoren, og lim inn hele innholdet fra `google-apps-script/Pamelding.gs` i dette repoet. Trykk lagre-ikonet.
+4. Klikk tannhjulet **Prosjektinnstillinger** (venstre meny) → nederst **Skriptegenskaper** → **Legg til skriptegenskap**:
+   - `ADMIN_PASSWORD` = et sterkt passord til /admin (del det bare med styret)
+   - `ADMIN_EMAIL` = e-posten som skal få oppsummeringene (valgfritt – står den tom, brukes Gmail-kontoen)
+5. Tilbake i editoren: velg funksjonen **setup** i nedtrekkslisten øverst, og trykk **Kjør**. Godkjenn tilgangene Google ber om (velg kontoen → «Avansert» → «Gå til … (usikker)» → Tillat). Dette er ditt eget skript.
+6. **Distribuer → Ny distribusjon** → tannhjulet → **Nettapp**:
+   - *Kjør som:* **Meg**
+   - *Hvem har tilgang:* **Alle**
+   - Trykk **Distribuer** og kopier **nettapp-adressen** (`https://script.google.com/macros/s/…/exec`).
+7. Gå til `/loggin` → **Innstillinger** → lim adressen inn i **«Påmelding – Google Apps Script-adresse»** → Save.
+8. Test: meld deg på et arrangement, og sjekk at du ser påmeldingen på `/admin` og som en rad i regnearket.
+
+**Endrer noen skriptet senere**, må det distribueres på nytt: **Distribuer → Administrer distribusjoner → blyanten → Versjon: Ny versjon → Distribuer**. Adressen forblir den samme.
+
+**Personvern:** Mat- og allergisvar (og særlig Halal) kan være sensitive opplysninger. Bare styret skal ha passordet til /admin og tilgang til regnearket. Slett påmeldingene når arrangementet er over – det kan gjøres med knappen **Slett påmeldinger** på /admin. Bytt `ADMIN_PASSWORD` når styret byttes.
+
+Uten Apps Script-adressen faller skjemaet tilbake til Formspree (hvis den er satt): da kommer én e-post per påmelding, men /admin-oversikten fungerer ikke.
 
 ## Aktivere innlogging på /loggin
 

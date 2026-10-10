@@ -101,8 +101,8 @@ export default defineConfig({
           {
             type: "boolean",
             name: "registrationAskNotes",
-            label: "Spør om allergier/kommentarer i påmeldingen",
-            description: "Fint når det blir mat. Gjelder bare påmelding på nettsiden.",
+            label: "Spør om mat og allergier",
+            description: "Halal, vegansk, nøtteallergi og annet. Fint når det blir mat. Gjelder bare påmelding på nettsiden.",
           },
           {
             type: "string",
@@ -265,9 +265,16 @@ export default defineConfig({
           },
           {
             type: "string",
+            name: "registrationScriptUrl",
+            label: "Påmelding – Google Apps Script-adresse",
+            description:
+              "Lagrer påmeldinger i foreningens Google-regneark og gjør /admin mulig. Ser ut som https://script.google.com/macros/s/…/exec. Se README.",
+          },
+          {
+            type: "string",
             name: "formspreeRegistrationEndpoint",
-            label: "Formspree-adresse – påmelding til arrangementer",
-            description: "Ett skjema for alle arrangementer. Arrangementets navn står i emnet på e-posten.",
+            label: "Formspree-adresse – påmelding (reserve)",
+            description: "Brukes bare hvis Google Apps Script-adressen over står tom. Gir e-post per påmelding, men ingen /admin-oversikt.",
           },
           { type: "boolean", name: "showStats", label: "Vis tall-seksjonen på forsiden" },
           {
