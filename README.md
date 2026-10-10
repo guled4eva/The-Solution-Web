@@ -47,7 +47,9 @@ Redigerer du en JSON-fil for hånd: hold på anførselstegnene `"…"` og kommae
 - Hvert arrangement er én fil i `content/arrangementer/`. **Filnavnet blir adressen**: `julebord-2026.json` → `/arrangementer/julebord-2026`. I panelet lages filnavnet automatisk fra tittelen.
 - Nettsiden sorterer selv: arrangementer fra og med i dag står under «Kommende arrangementer» (tidligste først), eldre arrangementer under «Tidligere arrangementer» (nyeste først). Forsiden viser de tre neste.
 - **Bilde** er valgfritt. Uten bilde vises en grafisk plassholder i kategorifargen. Bruk liggende bilder (ca. 1200 × 675 piksler) og hold dem under ca. 300 kB – komprimer gjerne på <https://squoosh.app>.
-- **Påmelding:** står påmeldingslenken tom, vises ingen påmeldingsknapp. Når påmeldingsfristen har passert, skjules knappen automatisk.
+- **Påmelding på nettsiden:** slå på **Påmelding på nettsiden**, så får arrangementssiden et skjema med navn og e-post. Slå på **Spør om allergier/kommentarer** når det blir mat. Påmeldingene kommer på e-post via Formspree (se under), med arrangementets navn i emnet.
+- **Ekstern påmelding:** skjer påmeldingen et annet sted (f.eks. Google Skjema), lim inn lenken i **Ekstern påmeldingslenke** i stedet.
+- Når **påmeldingsfristen** har passert, stenges påmeldingen automatisk. Nettsiden kan ikke telle påmeldte eller stenge ved fullt – det ser dere i e-posten/Formspree.
 - **Kategori** er én av: Sosialt, Faglig, Bedrift, Generalforsamling, Annet.
 - Slå av **Eksempel** for ekte arrangementer. Eksempel-arrangementene som ligger der nå kan slettes.
 
@@ -125,11 +127,12 @@ GitHub Pages kan bare vise nettsider – den kan ikke ta imot skjemaer. Derfor b
 Inntil dette er gjort, sier skjemaene tydelig fra om at de ikke er aktivert, og **ingenting blir sendt**.
 
 1. Gå til <https://formspree.io> og lag en konto med `thesolution.oslomet@gmail.com`.
-2. Lag to skjemaer: «Forslagsboksen» og «Kontaktskjema».
+2. Lag tre skjemaer: «Forslagsboksen», «Kontaktskjema» og «Påmelding».
 3. Kopier adressen til hvert skjema. Den ser slik ut: `https://formspree.io/f/abcdwxyz`
 4. Lim dem inn under **Innstillinger** i panelet (eller i `content/innstillinger/nettside.json`):
    - **Formspree-adresse – Forslagsboksen**
    - **Formspree-adresse – kontaktskjema**
+   - **Formspree-adresse – påmelding til arrangementer** (ett skjema for alle arrangementer)
 5. Send gjerne inn en test for å sjekke at det kommer frem. Første gang må dere kanskje bekrefte e-postadressen i Formspree.
 
 **Anonyme forslag:** Når «Jeg ønsker å sende inn forslaget anonymt» er huket av, sendes navn og e-post **ikke** med.
