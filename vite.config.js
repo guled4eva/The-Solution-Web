@@ -1,22 +1,73 @@
+import { copyFileSync, mkdirSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { events } from "./src/data/events.js";
 
 /**
  * Vite-konfigurasjon.
  *
- * `base: "./"` betyr at alle filer lastes med relative stier.
- * Sammen med HashRouter (adresser som /#/styret) fungerer nettsiden da
- * uansett hvor den ligger:
- *   - https://brukernavn.github.io/the-solution/     (prosjektside)
- *   - https://brukernavn.github.io/                  (brukerside)
- *   - https://eget-domene.no/                        (eget domene)
+ * Nettsiden bruker vanlige adresser uten #, f.eks. /styret og /arrangementer.
  *
- * Du trenger altså IKKE endre noe her hvis repoet får et nytt navn.
- *
- * Hvis dere senere bytter til BrowserRouter (adresser uten #), må `base`
- * settes til repo-navnet, f.eks. base: "/the-solution/". Se README.md.
+ * `base: "/"` betyr at nettsiden ligger i roten av domenet
+ * (https://www.thesolutionoslomet.no/). Hvis nettsiden en gang skal ligge i
+ * en undermappe, f.eks. https://brukernavn.github.io/repo-navn/, må base
+ * endres til "/repo-navn/".
  */
+const BASE = "/";
+
+// Pages that get their own HTML copy, so direct links and refresh work on GitHub Pages.
+const STATIC_ROUTES = ["styret", "arrangementer", "forslagsboksen", "om-oss", "kontakt"];
+
+/** Same slug rules as src/lib/events.js (kept simple; 404.html covers any mismatch). */
+function slugify(text) {
+  return String(text || "")
+    .toLowerCase()
+    .replace(/æ/g, "ae")
+    .replace(/ø/g, "o")
+    .replace(/å/g, "a")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/**
+ * GitHub Pages only serves files that exist. After the build, copy index.html to:
+ *   - styret.html, kontakt.html, …        → /styret, /kontakt work directly
+ *   - arrangementer/<slug>.html            → each event page works directly
+ *   - 404.html                             → any other address still loads the app,
+ *                                            which then shows the right page or "404"
+ */
+function githubPagesRoutes() {
+  let outDir = "dist";
+  return {
+    name: "github-pages-routes",
+    apply: "build",
+    configResolved(config) {
+      outDir = config.build.outDir;
+    },
+    closeBundle() {
+      const index = join(outDir, "index.html");
+      const copyTo = (file) => {
+        const target = join(outDir, file);
+        mkdirSync(dirname(target), { recursive: true });
+        copyFileSync(index, target);
+      };
+      copyTo("404.html");
+      STATIC_ROUTES.forEach((route) => {
+        copyTo(`${route}.html`);
+        copyTo(`${route}/index.html`);
+      });
+      (Array.isArray(events) ? events : []).forEach((event) => {
+        const slug = slugify(event?.slug || event?.title);
+        if (slug) copyTo(`arrangementer/${slug}.html`);
+      });
+    },
+  };
+}
+
 export default defineConfig({
-  base: "./",
-  plugins: [react()],
+  base: BASE,
+  plugins: [react(), githubPagesRoutes()],
 });
