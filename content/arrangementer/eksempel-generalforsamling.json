@@ -1,13 +1,13 @@
 {
-  "title": "Eksempel: Generalforsamling",
-  "date": "2026-09-10",
+  "title": "Generalforsamling",
+  "date": "2026-10-26T01:00:00.000Z",
   "time": "17:00",
-  "location": "[LEGG INN STED]",
+  "location": "P35",
   "category": "Generalforsamling",
   "description": "Eksempelarrangement i fortiden. Viser hvordan tidligere arrangementer vises.",
   "fullDescription": "Dette er et eksempel på et tidligere arrangement. Når datoen har passert, flyttes arrangementet automatisk til «Tidligere arrangementer».",
-  "image": "",
+  "image": "/images/arrangementer/the_solution_oslomet_logo.jpg",
   "registrationLink": "",
-  "registrationDeadline": "",
+  "registrationDeadline": "2026-10-10T15:00:01.767Z",
   "placeholder": true
 }
