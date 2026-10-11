@@ -1490,6 +1490,26 @@ span.logo {
   object-fit: cover;
   background: var(--color-surface-alt);
 }
+.event-image--fit {
+  position: relative;
+  display: block;
+  overflow: hidden;
+}
+.event-image__backdrop {
+  position: absolute;
+  inset: -10%;
+  width: 120%;
+  height: 120%;
+  object-fit: cover;
+  filter: blur(28px) saturate(1.1);
+  opacity: 0.45;
+}
+.event-image__main {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 .event-image--placeholder {
   position: relative;
   display: grid;
@@ -3390,7 +3410,7 @@ main > * {
 .ed-image__preview img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 .ed-image__empty {
   font-size: var(--text-xs);

@@ -14,17 +14,23 @@ export default function EventImage({ event, large = false }) {
   const { Icon } = meta;
 
   if (isFilled(event.image) && !failed) {
+    // The whole picture is always shown (nothing cut off). Empty space around
+    // square or tall pictures is filled with a soft, blurred copy of the same picture.
+    const src = assetUrl(event.image);
     return (
-      <img
-        className="event-image"
-        src={assetUrl(event.image)}
-        alt=""
-        loading={large ? "eager" : "lazy"}
-        decoding="async"
-        width={large ? 1200 : 600}
-        height={large ? 675 : 338}
-        onError={() => setFailed(true)}
-      />
+      <div className="event-image event-image--fit">
+        <img className="event-image__backdrop" src={src} alt="" aria-hidden="true" loading={large ? "eager" : "lazy"} />
+        <img
+          className="event-image__main"
+          src={src}
+          alt=""
+          loading={large ? "eager" : "lazy"}
+          decoding="async"
+          width={large ? 1200 : 600}
+          height={large ? 675 : 338}
+          onError={() => setFailed(true)}
+        />
+      </div>
     );
   }
 
