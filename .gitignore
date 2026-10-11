@@ -7,4 +7,5 @@ dist
 
 # TinaCMS: these are generated during the build
 public/loggin
+public/tina-admin
 tina/__generated__

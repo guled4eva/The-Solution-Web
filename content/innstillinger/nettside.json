@@ -16,8 +16,6 @@
   "formspreeContactEndpoint": "",
   "formspreeRegistrationEndpoint": "https://formspree.io/f/mrpekyrd",
   "registrationScriptUrl": "https://script.google.com/macros/s/AKfycbwmT4X2evIVbS1FmiAPks0EDAVA_9uIjpSVRl7cKeqs8CLiqdF_FK-GLvtxB32bonZ6pg/exec",
-  "adminEmail": "thesolution.oslomet@gmail.com",
-  "adminPassword": "Oslomet2025",
   "showStats": true,
   "stats": [
     {

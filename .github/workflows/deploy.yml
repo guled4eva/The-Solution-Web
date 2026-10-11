@@ -5,7 +5,7 @@
 # Engangsoppsett i GitHub:
 #   Settings → Pages → Build and deployment → Source: "GitHub Actions"
 #
-# For innlogging på /loggin (TinaCMS) må disse ligge under
+# For reservepanelet på /tina-admin (TinaCMS) må disse ligge under
 #   Settings → Secrets and variables → Actions → New repository secret:
 #     TINA_PUBLIC_CLIENT_ID
 #     TINA_TOKEN
@@ -46,7 +46,7 @@ jobs:
       - name: Installer avhengigheter
         run: npm ci
 
-      - name: Bygg redigeringspanelet (/loggin)
+      - name: Bygg reservepanelet TinaCMS (/tina-admin)
         if: ${{ env.TINA_PUBLIC_CLIENT_ID != '' && env.TINA_TOKEN != '' }}
         run: npx tinacms build --noTelemetry
 

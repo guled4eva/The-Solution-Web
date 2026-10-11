@@ -55,10 +55,9 @@ export default function Footer() {
       <div className="container footer__bottom">
         <p>© {year} {siteConfig.associationName}</p>
         <p className="footer__motto">Av studenter – for studenter.</p>
-        {/* Plain link (not router Link) so the browser loads the separate editing panel */}
         <p className="footer__login">
           For styret:{" "}
-          <a href="/loggin/">Rediger nettsiden</a>
+          <Link to="/loggin">Rediger nettsiden</Link>
           <span aria-hidden="true"> · </span>
           <Link to="/admin">Påmeldinger og besøk</Link>
         </p>

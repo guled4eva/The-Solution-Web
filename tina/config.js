@@ -1,5 +1,6 @@
 /**
- * TinaCMS – redigeringspanelet på https://www.thesolutionoslomet.no/loggin
+ * TinaCMS – reserve-redigeringspanel på https://www.thesolutionoslomet.no/tina-admin
+ * (det vanlige panelet er /loggin, som bruker samme passord som /admin)
  *
  * Denne filen bestemmer hvilke skjemaer som vises i panelet.
  * Innholdet ligger i mappen content/ og lagres i GitHub når noen trykker «Save».
@@ -33,7 +34,7 @@ export default defineConfig({
   token: process.env.TINA_TOKEN || null,
 
   build: {
-    outputFolder: "loggin",
+    outputFolder: "tina-admin",
     publicFolder: "public",
   },
 
@@ -275,19 +276,6 @@ export default defineConfig({
             name: "formspreeRegistrationEndpoint",
             label: "Formspree-adresse – påmelding (reserve)",
             description: "Brukes bare hvis Google Apps Script-adressen over står tom. Gir e-post per påmelding, men ingen /admin-oversikt.",
-          },
-          {
-            type: "string",
-            name: "adminEmail",
-            label: "/admin – e-post for innlogging",
-            description: "E-posten man skriver inn for å logge inn på www.thesolutionoslomet.no/admin.",
-          },
-          {
-            type: "string",
-            name: "adminPassword",
-            label: "/admin – passord",
-            description:
-              "NB: Enkel lås. Passordet ligger synlig i GitHub-repoet. Ikke bruk det samme passordet noe annet sted.",
           },
           { type: "boolean", name: "showStats", label: "Vis tall-seksjonen på forsiden" },
           {

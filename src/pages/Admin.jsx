@@ -20,7 +20,8 @@ import { allEvents } from "../lib/events.js";
 import { formatDeadline, formatLongDate, formatShortDate, isPast, parseLocalDate } from "../lib/dates.js";
 import { DIET_OPTIONS, callScript, dietText, isValidScriptUrl } from "../lib/registrations.js";
 import { usePageTitle } from "../hooks/usePageTitle.js";
-import SimpleAdmin from "./SimpleAdmin.jsx";
+import { useNoIndex } from "../hooks/useNoIndex.js";
+import { readAdminSession, writeAdminSession } from "../lib/adminSession.js";
 import AdminVisits from "./AdminVisits.jsx";
 
 /*
@@ -32,7 +33,6 @@ import AdminVisits from "./AdminVisits.jsx";
  * Sign-ups are deleted automatically by the script 30 days after the event.
  */
 
-const SESSION_KEY = "ts-admin-password";
 const DELETE_AFTER_DAYS = 30;
 
 const errorTexts = {
@@ -41,33 +41,6 @@ const errorTexts = {
   "no-password-configured": "Passordet er ikke satt i Google Apps Script ennå (ADMIN_PASSWORD).",
   network: "Fikk ikke kontakt med Google. Sjekk internettforbindelsen.",
 };
-
-function readSession() {
-  try {
-    return sessionStorage.getItem(SESSION_KEY) || "";
-  } catch {
-    return "";
-  }
-}
-function writeSession(value) {
-  try {
-    if (value) sessionStorage.setItem(SESSION_KEY, value);
-    else sessionStorage.removeItem(SESSION_KEY);
-  } catch {
-    /* private mode – password just isn't remembered */
-  }
-}
-
-/** Keeps search engines away from the admin pages. */
-function useNoIndex() {
-  useEffect(() => {
-    const meta = document.createElement("meta");
-    meta.name = "robots";
-    meta.content = "noindex, nofollow";
-    document.head.appendChild(meta);
-    return () => meta.remove();
-  }, []);
-}
 
 function formatTimestamp(iso) {
   const d = new Date(iso);
@@ -315,7 +288,17 @@ function EventDetail({ group, onDelete, deleting }) {
 export default function Admin() {
   usePageTitle("Admin");
   useNoIndex();
-  return isValidScriptUrl(siteConfig.registrationScriptUrl) ? <ScriptAdmin /> : <SimpleAdmin />;
+  if (isValidScriptUrl(siteConfig.registrationScriptUrl)) return <ScriptAdmin />;
+  return (
+    <section className="section admin">
+      <div className="container">
+        <h1 className="admin__title">Admin</h1>
+        <FormStatus type="info" title="Google-skriptet er ikke satt opp">
+          <p>Legg inn adressen til Google Apps Script under Innstillinger. Se README.md, «Påmelding og /admin».</p>
+        </FormStatus>
+      </div>
+    </section>
+  );
 }
 
 function ScriptAdmin() {
@@ -325,7 +308,7 @@ function ScriptAdmin() {
   const [reloadKey, setReloadKey] = useState(0);
   const scriptUrl = siteConfig.registrationScriptUrl;
 
-  const [password, setPassword] = useState(readSession);
+  const [password, setPassword] = useState(readAdminSession);
   const [input, setInput] = useState("");
   const [registrations, setRegistrations] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -343,14 +326,14 @@ function ScriptAdmin() {
       if (res?.ok) {
         setRegistrations(Array.isArray(res.registrations) ? res.registrations : []);
         setPassword(pw);
-        writeSession(pw);
+        writeAdminSession(pw);
         setUpdatedAt(new Date());
       } else {
         const code = res?.error || "server-error";
         setError(errorTexts[code] || "Noe gikk galt. Prøv igjen.");
         if (code === "unauthorized" || code === "too-many-attempts") {
           setPassword("");
-          writeSession("");
+          writeAdminSession("");
           setRegistrations(null);
         }
       }
@@ -372,7 +355,7 @@ function ScriptAdmin() {
   };
 
   const logout = () => {
-    writeSession("");
+    writeAdminSession("");
     setPassword("");
     setRegistrations(null);
     setInput("");

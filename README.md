@@ -8,7 +8,7 @@ Nettsiden er laget med React og Vite, og publiseres gratis med GitHub Pages.
 
 ## Den enkle måten: logg inn på /loggin
 
-Gå til **https://www.thesolutionoslomet.no/loggin** og logg inn med foreningens konto (`thesolution.oslomet@gmail.com`).
+Gå til **https://www.thesolutionoslomet.no/loggin** og logg inn med **styrets passord** – det samme som på /admin. (Lenken står også nederst på alle sider: «For styret: Rediger nettsiden».)
 Der kan du endre:
 
 | Meny i panelet  | Hva du endrer                                                              |
@@ -19,9 +19,9 @@ Der kan du endre:
 | Historie        | Tidslinjen på «Om oss»                                                     |
 | Innstillinger   | E-post, sosiale medier, vedtekter (PDF), tall på forsiden, Formspree       |
 
-Trykk **Save** når du er ferdig. Endringen lagres i GitHub, og nettsiden oppdateres av seg selv etter 1–2 minutter.
+Trykk **Lagre** når du er ferdig. Endringen lagres i GitHub, og nettsiden oppdateres av seg selv etter 1–2 minutter.
 
-> Innloggingen må settes opp én gang. Se [Aktivere innlogging på /loggin](#aktivere-innlogging-på-loggin).
+> Redigeringen må settes opp én gang. Se [Redigering på /loggin](#redigering-på-loggin).
 
 ## Hvor ligger innholdet?
 
@@ -163,7 +163,7 @@ Oppsett (én gang, ca. 10 minutter, logget inn som `thesolution.oslomet@gmail.co
    - *Kjør som:* **Meg**
    - *Hvem har tilgang:* **Alle**
    - Trykk **Distribuer** og kopier **nettapp-adressen** (`https://script.google.com/macros/s/…/exec`).
-7. Gå til `/loggin` → **Innstillinger** → lim adressen inn i **«Påmelding – Google Apps Script-adresse»** → Save.
+7. Gå til `/loggin` → **Innstillinger** → lim adressen inn i **«Google Apps Script-adresse»** → Lagre. (Første gang, før /loggin virker: endre `registrationScriptUrl` i `content/innstillinger/nettside.json` direkte på github.com.)
 8. Test: meld deg på et arrangement, og sjekk at du ser påmeldingen på `/admin` og som en rad i regnearket.
 
 **Endrer noen skriptet senere**, må det distribueres på nytt: **Distribuer → Administrer distribusjoner → blyanten → Versjon: Ny versjon → Distribuer**. Adressen forblir den samme.
@@ -172,13 +172,38 @@ Oppsett (én gang, ca. 10 minutter, logget inn som `thesolution.oslomet@gmail.co
 
 **Personvern:** Mat- og allergisvar (og særlig Halal) kan være sensitive opplysninger. Bare styret skal ha passordet til /admin og tilgang til regnearket. Påmeldingene slettes automatisk 1 måned etter arrangementet. Bytt `ADMIN_PASSWORD` når styret byttes.
 
-Når Google Apps Script er satt opp, brukes **passordet fra Google** (`ADMIN_PASSWORD`) på /admin. Feltene «/admin – e-post» og «/admin – passord» i panelet brukes bare så lenge Google ikke er satt opp.
-
 Uten Apps Script-adressen faller skjemaet tilbake til Formspree (hvis den er satt): da kommer én e-post per påmelding, men /admin-oversikten fungerer ikke.
 
-## Aktivere innlogging på /loggin
+## Redigering på /loggin
 
-Panelet på `/loggin` er **TinaCMS**. Innloggingen håndteres av TinaCloud (gratisversjonen har plass til 2 brukere – nok for foreningens felles konto). Oppsettet gjøres én gang, av den som eier GitHub-repoet:
+Redigeringspanelet på `/loggin` bruker **samme passord som /admin** (`ADMIN_PASSWORD` i Google-skriptet). Google-skriptet henter og lagrer innholdet i GitHub med en egen GitHub-nøkkel som bare ligger hos Google – aldri i nettsiden.
+
+Oppsett (én gang, ca. 5 minutter). Først en GitHub-nøkkel, logget inn på GitHub-kontoen som eier repoet:
+
+1. Gå til <https://github.com/settings/personal-access-tokens/new> (Settings → Developer settings → Personal access tokens → **Fine-grained tokens** → Generate new token).
+2. **Token name:** `The Solution /loggin`. **Expiration:** så lenge som mulig (f.eks. 1 år – sett en påminnelse om å lage en ny).
+3. **Repository access:** *Only select repositories* → velg **The-Solution-Web**.
+4. **Permissions → Repository permissions → Contents:** **Read and write**. (Ingenting annet.)
+5. Trykk **Generate token** og kopier nøkkelen (vises bare én gang).
+
+Så i Google Apps Script:
+
+6. **Project Settings → Script Properties:**
+   - Legg til `GITHUB_TOKEN` = nøkkelen fra steg 5.
+   - Bytt `ADMIN_PASSWORD` til et **nytt, sterkt passord på minst 12 tegn**. Svakere passord blir avvist for redigering, siden passordet nå kan endre hele nettsiden.
+7. Lim inn den nyeste `google-apps-script/Pamelding.gs` hvis du ikke har gjort det, og **kjør `setup` én gang** – Google ber da om lov til å «koble til en ekstern tjeneste» (GitHub). Godkjenn.
+8. **Deploy → Manage deployments → ✏️ → Version: New version → Deploy.**
+9. Gå til `/loggin` og logg inn med det nye passordet.
+
+Bilder som lastes opp gjøres automatisk mindre (maks 2000 piksler) og havner i `public/images/…`. Hver lagring blir en endring i GitHub, så alt kan spores og gjenopprettes der.
+
+**Sikkerhet:** Alle som kan passordet, kan endre nettsiden og se påmeldingene. Del det bare med styret, og bytt det når styret byttes. Er nøkkelen lekket eller utløpt, lag en ny (steg 1–5) og bytt `GITHUB_TOKEN`.
+
+### Reserve: TinaCMS på /tina-admin
+
+Det gamle panelet (TinaCMS) finnes fortsatt på `/tina-admin` som reserve, og bruker TinaCloud-kontoen. Det kan fjernes når /loggin har fungert en stund.
+
+Panelet på `/tina-admin` er **TinaCMS**. Innloggingen håndteres av TinaCloud (gratisversjonen har plass til 2 brukere – nok for foreningens felles konto). Oppsettet gjøres én gang, av den som eier GitHub-repoet:
 
 1. Gå til <https://app.tina.io> og lag en konto med `thesolution.oslomet@gmail.com`.
 2. Velg **Create Project** → **Import your site**. Gi TinaCloud tilgang til GitHub-repoet med nettsiden når den spør (logg inn med GitHub-kontoen som eier repoet).
@@ -188,9 +213,9 @@ Panelet på `/loggin` er **TinaCMS**. Innloggingen håndteres av TinaCloud (grat
    - Navn `TINA_PUBLIC_CLIENT_ID`, verdi: Client ID-en
    - Navn `TINA_TOKEN`, verdi: tokenet
 6. Gå til **Actions** → «Deploy The Solution to GitHub Pages» → **Run workflow**.
-7. Når kjøringen er grønn, gå til <https://www.thesolutionoslomet.no/loggin> og logg inn.
+7. Når kjøringen er grønn, gå til <https://www.thesolutionoslomet.no/tina-admin/> og logg inn.
 
-Nøklene ligger trygt som «secrets» i GitHub og havner aldri i koden. Før oppsettet er gjort viser `/loggin` bare en melding om at panelet ikke er aktivert – resten av nettsiden fungerer som vanlig.
+Nøklene ligger trygt som «secrets» i GitHub og havner aldri i koden. Uten disse nøklene bygges bare ikke reservepanelet – resten av nettsiden fungerer som vanlig.
 
 **Sikkerhet:** Alle som kan logge inn på `thesolution.oslomet@gmail.com`, kan endre nettsiden. Bruk et sterkt passord og slå på totrinnsbekreftelse på Gmail-kontoen, og bytt passord når styret byttes.
 

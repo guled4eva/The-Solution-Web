@@ -7,6 +7,8 @@
  *  sletter påmeldingene automatisk 1 måned etter arrangementet.
  *  Teller også besøk på nettsiden (anonymt: ingen IP, ingen
  *  informasjonskapsler) og viser dem på /admin.
+ *  Lagrer endringer fra redigeringspanelet på /loggin i GitHub
+ *  (krever GITHUB_TOKEN – se README.md, «Redigering på /loggin»).
  *
  *  Oppsett: se README.md, avsnittet «Påmelding og /admin».
  *  Kort fortalt:
@@ -15,6 +17,8 @@
  *    3. Prosjektinnstillinger → Skriptegenskaper:
  *         ADMIN_PASSWORD = et sterkt passord for /admin
  *         ADMIN_EMAIL    = e-posten som skal få oppsummeringene (valgfritt)
+ *         GITHUB_TOKEN   = GitHub-nøkkel som kan endre nettsiden (for /loggin)
+ *         GITHUB_REPO    = guled4eva/The-Solution-Web (valgfritt, dette er standard)
  *    4. Kjør funksjonen «setup» én gang og godkjenn tilgangene.
  *    5. Distribuer → Ny distribusjon → Nettapp:
  *         Kjør som: Meg   ·   Hvem har tilgang: Alle
@@ -39,6 +43,15 @@ const VISIT_CHANNELS = ['Direkte', 'Søk', 'Sosiale medier', 'Lenke', 'Kampanje'
 const KEEP_VISITS_DAYS = 400; // besøkstall slettes etter ca. 13 måneder
 const TIME_ZONE = 'Europe/Oslo';
 
+const DEFAULT_REPO = 'guled4eva/The-Solution-Web';
+const DEFAULT_BRANCH = 'main';
+// Bare disse filene og mappene kan endres fra /loggin
+const CONTENT_PATH = /^content\/(arrangementer\/[a-z0-9][a-z0-9-]{0,80}|styret\/styret|tekster\/tekster|historie\/historie|innstillinger\/nettside)\.json$/;
+const UPLOAD_FOLDERS = ['arrangementer', 'styret', 'dokumenter', 'logo', 'diverse'];
+const UPLOAD_TYPES = { jpg: 'image', jpeg: 'image', png: 'image', webp: 'image', gif: 'image', pdf: 'pdf' };
+const MAX_UPLOAD_BYTES = 15 * 1024 * 1024;
+const WEAK_PASSWORDS = ['oslomet2025', 'biokjemi2025', 'passord', 'password'];
+
 // ------------------------------------------------------------
 // Inngang fra nettsiden
 // ------------------------------------------------------------
@@ -55,6 +68,14 @@ function doPost(e) {
         return json_(register_(body));
       case 'visit':
         return json_(visit_(body));
+      case 'content-load':
+        return json_(withEditAuth_(body, () => contentLoad_()));
+      case 'content-save':
+        return json_(withEditAuth_(body, () => contentSave_(body)));
+      case 'content-delete':
+        return json_(withEditAuth_(body, () => contentDelete_(body)));
+      case 'upload':
+        return json_(withEditAuth_(body, () => upload_(body)));
       case 'stats':
         return json_(withAuth_(body, () => ({ ok: true, visits: visitStats_(Number(body.days) || 30) })));
       case 'list':
@@ -197,6 +218,142 @@ function withAuth_(b, fn) {
     return { ok: false, error: 'unauthorized' };
   }
   return fn();
+}
+
+/** Like withAuth_, but also requires a strong password, since it can change the website. */
+function withEditAuth_(b, fn) {
+  return withAuth_(b, () => {
+    const pw = PropertiesService.getScriptProperties().getProperty('ADMIN_PASSWORD') || '';
+    if (pw.length < 12 || WEAK_PASSWORDS.indexOf(pw.toLowerCase()) !== -1) return { ok: false, error: 'weak-password' };
+    if (!PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN')) return { ok: false, error: 'no-github-token' };
+    return fn();
+  });
+}
+
+// ------------------------------------------------------------
+// Redigering (/loggin) – leser og lagrer filer i GitHub
+// ------------------------------------------------------------
+function github_(method, path, payload) {
+  const props = PropertiesService.getScriptProperties();
+  const repo = props.getProperty('GITHUB_REPO') || DEFAULT_REPO;
+  const options = {
+    method: method,
+    muteHttpExceptions: true,
+    headers: {
+      Authorization: 'Bearer ' + props.getProperty('GITHUB_TOKEN'),
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+    },
+  };
+  if (payload) {
+    options.contentType = 'application/json';
+    options.payload = JSON.stringify(payload);
+  }
+  const res = UrlFetchApp.fetch('https://api.github.com/repos/' + repo + path, options);
+  const code = res.getResponseCode();
+  let data = null;
+  try {
+    data = JSON.parse(res.getContentText() || 'null');
+  } catch (err) {
+    data = null;
+  }
+  return { code: code, data: data };
+}
+
+function githubError_(res) {
+  if (res.code === 401) return { ok: false, error: 'github-token-invalid' };
+  if (res.code === 403 || res.code === 404) return { ok: false, error: 'github-no-access' };
+  if (res.code === 409 || res.code === 422) return { ok: false, error: 'conflict' };
+  return { ok: false, error: 'github-error', detail: String(res.code) + ' ' + ((res.data && res.data.message) || '') };
+}
+
+function branch_() {
+  return PropertiesService.getScriptProperties().getProperty('GITHUB_BRANCH') || DEFAULT_BRANCH;
+}
+
+function decode_(base64) {
+  return Utilities.newBlob(Utilities.base64Decode(String(base64).replace(/\s/g, ''))).getDataAsString('UTF-8');
+}
+
+function encode_(text) {
+  return Utilities.base64Encode(text, Utilities.Charset.UTF_8);
+}
+
+/** Returns every content file: [{ path, sha, content }]. */
+function contentLoad_() {
+  const tree = github_('get', '/git/trees/' + encodeURIComponent(branch_()) + '?recursive=1');
+  if (tree.code !== 200) return githubError_(tree);
+  const files = (tree.data.tree || []).filter((f) => f.type === 'blob' && CONTENT_PATH.test(f.path));
+  const props = PropertiesService.getScriptProperties();
+  const repo = props.getProperty('GITHUB_REPO') || DEFAULT_REPO;
+  const headers = {
+    Authorization: 'Bearer ' + props.getProperty('GITHUB_TOKEN'),
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+  };
+  const responses = UrlFetchApp.fetchAll(
+    files.map((f) => ({ url: 'https://api.github.com/repos/' + repo + '/git/blobs/' + f.sha, headers: headers, muteHttpExceptions: true }))
+  );
+  const out = [];
+  for (let i = 0; i < files.length; i++) {
+    if (responses[i].getResponseCode() !== 200) return githubError_({ code: responses[i].getResponseCode(), data: null });
+    out.push({ path: files[i].path, sha: files[i].sha, content: decode_(JSON.parse(responses[i].getContentText()).content) });
+  }
+  return { ok: true, files: out };
+}
+
+function contentSave_(b) {
+  const path = String(b.path || '');
+  if (!CONTENT_PATH.test(path)) return { ok: false, error: 'invalid-path' };
+  const text = String(b.content || '');
+  if (text.length > 300000) return { ok: false, error: 'too-large' };
+  try {
+    JSON.parse(text);
+  } catch (err) {
+    return { ok: false, error: 'invalid-json' };
+  }
+  const payload = {
+    message: (b.sha ? 'Oppdatert' : 'Lagt til') + ' via /loggin: ' + path.replace(/^content\//, ''),
+    content: encode_(text),
+    branch: branch_(),
+  };
+  if (b.sha) payload.sha = String(b.sha);
+  const res = github_('put', '/contents/' + path, payload);
+  if (res.code !== 200 && res.code !== 201) return githubError_(res);
+  return { ok: true, sha: res.data.content.sha };
+}
+
+function contentDelete_(b) {
+  const path = String(b.path || '');
+  if (!/^content\/arrangementer\//.test(path) || !CONTENT_PATH.test(path) || !b.sha) return { ok: false, error: 'invalid-path' };
+  const res = github_('delete', '/contents/' + path, {
+    message: 'Slettet via /loggin: ' + path.replace(/^content\//, ''),
+    sha: String(b.sha),
+    branch: branch_(),
+  });
+  if (res.code !== 200) return githubError_(res);
+  return { ok: true };
+}
+
+/** Uploads an image or PDF to public/images/<folder>/ and returns its web address. */
+function upload_(b) {
+  const folder = UPLOAD_FOLDERS.indexOf(b.folder) !== -1 ? b.folder : 'diverse';
+  const m = /^(.*?)\.([a-z0-9]+)$/i.exec(String(b.name || ''));
+  const ext = m ? m[2].toLowerCase() : '';
+  if (!UPLOAD_TYPES[ext]) return { ok: false, error: 'invalid-file-type' };
+  const data = String(b.data || '').replace(/^data:[^,]*,/, '');
+  if (!data || data.length * 0.75 > MAX_UPLOAD_BYTES) return { ok: false, error: 'too-large' };
+  const base = m[1]
+    .toLowerCase()
+    .replace(/æ/g, 'ae').replace(/ø/g, 'o').replace(/å/g, 'a')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 50) || 'fil';
+  const name = Utilities.formatDate(new Date(), TIME_ZONE, 'yyyyMMdd-HHmmss') + '-' + base + '.' + ext;
+  const path = 'public/images/' + folder + '/' + name;
+  const res = github_('put', '/contents/' + path, { message: 'Lastet opp via /loggin: ' + folder + '/' + name, content: data, branch: branch_() });
+  if (res.code !== 201 && res.code !== 200) return githubError_(res);
+  return { ok: true, url: '/images/' + folder + '/' + name };
 }
 
 function listAll_() {

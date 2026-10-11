@@ -11,7 +11,7 @@ import Suggestions from "./pages/Suggestions.jsx";
 import About from "./pages/About.jsx";
 import Contact from "./pages/Contact.jsx";
 import NotFound from "./pages/NotFound.jsx";
-import LoginUnavailable from "./pages/LoginUnavailable.jsx";
+import Editor from "./pages/Editor.jsx";
 import Admin from "./pages/Admin.jsx";
 
 export default function App() {
@@ -38,7 +38,7 @@ export default function App() {
           <Route path="/forslagsboksen" element={<Suggestions />} />
           <Route path="/om-oss" element={<About />} />
           <Route path="/kontakt" element={<Contact />} />
-          <Route path="/loggin/*" element={<LoginUnavailable />} />
+          <Route path="/loggin/*" element={<Editor />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/:slug" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
