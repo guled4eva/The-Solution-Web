@@ -498,6 +498,16 @@ function setup() {
   console.log('Oppsett ferdig.');
 }
 
+/**
+ * Kjør denne én gang fra editoren: ber Google om lov til å kontakte GitHub,
+ * og sjekker at GITHUB_TOKEN virker.
+ */
+function testGithub() {
+  const res = github_('get', '');
+  if (res.code === 200) console.log('GitHub virker! Koblet til ' + res.data.full_name + '.');
+  else console.error('GitHub svarte ' + res.code + ': ' + JSON.stringify(githubError_(res)));
+}
+
 // ------------------------------------------------------------
 // Hjelpere
 // ------------------------------------------------------------

@@ -191,7 +191,7 @@ Så i Google Apps Script:
 6. **Project Settings → Script Properties:**
    - Legg til `GITHUB_TOKEN` = nøkkelen fra steg 5.
    - Bytt `ADMIN_PASSWORD` til et **nytt, sterkt passord på minst 12 tegn**. Svakere passord blir avvist for redigering, siden passordet nå kan endre hele nettsiden.
-7. Lim inn den nyeste `google-apps-script/Pamelding.gs` hvis du ikke har gjort det, og **kjør `setup` én gang** – Google ber da om lov til å «koble til en ekstern tjeneste» (GitHub). Godkjenn.
+7. Lim inn den nyeste `google-apps-script/Pamelding.gs` hvis du ikke har gjort det, og **kjør `testGithub` én gang** – Google ber da om lov til å «koble til en ekstern tjeneste» (GitHub). Godkjenn. Loggen skal vise «GitHub virker!».
 8. **Deploy → Manage deployments → ✏️ → Version: New version → Deploy.**
 9. Gå til `/loggin` og logg inn med det nye passordet.
 
