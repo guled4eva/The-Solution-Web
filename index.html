@@ -34,6 +34,26 @@
       href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
+    <script>
+      // After a new version is published, a browser may still hold the old page that points to
+      // JavaScript files that no longer exist (blank page). Reload once to fetch the new version.
+      window.addEventListener(
+        "error",
+        function (e) {
+          var t = e.target;
+          if (!t || (t.tagName !== "SCRIPT" && t.tagName !== "LINK")) return;
+          try {
+            var last = Number(sessionStorage.getItem("ts-reloaded") || 0);
+            if (Date.now() - last < 30000) return;
+            sessionStorage.setItem("ts-reloaded", String(Date.now()));
+          } catch (err) {
+            return;
+          }
+          location.reload();
+        },
+        true
+      );
+    </script>
   </head>
   <body>
     <noscript>Nettsiden til The Solution trenger JavaScript for å vises.</noscript>
