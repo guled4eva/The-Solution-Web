@@ -2796,9 +2796,12 @@ a.coop-list__item:focus-visible .coop-list__mail {
   width: 100%;
   font-size: var(--text-xs);
   color: var(--color-text-inverse-muted) !important;
+}
+.footer__login a {
+  color: inherit !important;
   text-decoration: none;
 }
-.footer__login:hover {
+.footer__login a:hover {
   text-decoration: underline;
 }
 @media (min-width: 600px) {
