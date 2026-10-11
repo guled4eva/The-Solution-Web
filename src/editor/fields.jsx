@@ -1,5 +1,6 @@
 import { useId, useRef, useState } from "react";
-import { ArrowDown, ArrowUp, ChevronDown, FileText, ImagePlus, Loader2, Plus, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronDown, Crop, FileText, ImagePlus, Loader2, Plus, Trash2, X } from "lucide-react";
+import CircleCropper from "./CircleCropper.jsx";
 import { parseLocalDate } from "../lib/dates.js";
 
 const pad = (n) => String(n).padStart(2, "0");
@@ -55,8 +56,15 @@ function ImageField({ field, value, onChange, ctx }) {
   const src = ctx.previews[value] || value;
 
   const [dragging, setDragging] = useState(false);
+  const [crop, setCrop] = useState(null); // { src, name, revoke }
+  const isCircle = field.crop === "circle";
 
-  const send = async (file) => {
+  const closeCrop = () => {
+    if (crop?.revoke) URL.revokeObjectURL(crop.src);
+    setCrop(null);
+  };
+
+  const send = async (file, cropped = false) => {
     if (!file || busy) return;
     if (!isPdf && !file.type.startsWith("image/")) {
       setError("Det du limte inn er ikke et bilde.");
@@ -66,6 +74,12 @@ function ImageField({ field, value, onChange, ctx }) {
     if (!isPdf && /^image\.(png|jpe?g|gif|webp)$/i.test(file.name)) {
       const ext = file.type.split("/")[1].replace("jpeg", "jpg");
       file = new File([file], `${field.folder || "bilde"}-limt-inn.${ext}`, { type: file.type });
+    }
+    // Round profile pictures: let the board choose the part that is shown first
+    if (isCircle && !cropped && file.type !== "image/gif") {
+      setError("");
+      setCrop({ src: URL.createObjectURL(file), name: file.name, revoke: true });
+      return;
     }
     setBusy(true);
     setError("");
@@ -121,7 +135,7 @@ function ImageField({ field, value, onChange, ctx }) {
                 <span>{value.split("/").pop()}</span>
               </a>
             ) : (
-              <img src={src} alt="" />
+              <img src={src} alt="" className={isCircle ? "is-circle" : undefined} />
             )
           ) : (
             <span className="ed-image__empty">
@@ -141,6 +155,15 @@ function ImageField({ field, value, onChange, ctx }) {
             {busy ? <Loader2 size={16} className="spin" aria-hidden="true" /> : <ImagePlus size={16} aria-hidden="true" />}
             <span>{busy ? "Laster opp …" : value ? "Bytt" : "Last opp"}</span>
           </button>
+          {value && !busy && isCircle && (
+            <button
+              type="button"
+              className="btn btn--ghost btn--sm"
+              onClick={() => setCrop({ src, name: value.split("/").pop(), revoke: false })}
+            >
+              <Crop size={16} aria-hidden="true" /> <span>Juster utsnitt</span>
+            </button>
+          )}
           {value && !busy && (
             <button type="button" className="btn btn--ghost btn--sm" onClick={() => onChange("")}>
               <X size={16} aria-hidden="true" /> <span>Fjern</span>
@@ -152,6 +175,17 @@ function ImageField({ field, value, onChange, ctx }) {
         <p className="field__error" role="alert">
           {error}
         </p>
+      )}
+      {crop && (
+        <CircleCropper
+          src={crop.src}
+          fileName={crop.name.replace(/^\d{8}-\d{6}-/, "")}
+          onCancel={closeCrop}
+          onDone={(file) => {
+            closeCrop();
+            send(file, true);
+          }}
+        />
       )}
       <Hint>
         {isPdf ? "" : "Du kan også kopiere et bilde, trykke på feltet og lime inn med Ctrl + V (Cmd + V på Mac). "}

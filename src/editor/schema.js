@@ -110,7 +110,14 @@ export const SECTIONS = [
         fields: [
           { name: "role", label: "Verv", type: "text", required: true },
           { name: "name", label: "Navn", type: "text" },
-          { name: "image", label: "Bilde", type: "image", folder: "styret", hint: "Kvadratisk bilde, ca. 600 × 600 piksler. Tomt = plassholder." },
+          {
+            name: "image",
+            label: "Bilde",
+            type: "image",
+            folder: "styret",
+            crop: "circle",
+            hint: "Vises som et rundt bilde. Etter opplasting velger du selv hvilken del som vises. Tomt = plassholder.",
+          },
           { name: "description", label: "Kort beskrivelse", type: "textarea", rows: 3 },
           { name: "responsibilities", label: "Ansvarsområder", type: "stringList", addLabel: "Legg til ansvarsområde" },
           { name: "email", label: "E-post", type: "text", inputType: "email" },

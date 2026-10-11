@@ -1726,11 +1726,24 @@ span.logo {
   aspect-ratio: 4 / 3;
   background: var(--color-surface-alt);
 }
+.member-card__photo {
+  display: grid;
+  place-items: center;
+}
+.member-card__photo:has(> img) {
+  background:
+    radial-gradient(circle at 50% 120%, rgba(31, 138, 112, 0.18), transparent 60%),
+    var(--color-primary-light);
+}
 .member-card__photo img {
-  width: 100%;
-  height: 100%;
+  width: min(62%, 220px);
+  aspect-ratio: 1;
+  height: auto;
+  border-radius: 50%;
   object-fit: cover;
   object-position: center 30%;
+  border: 5px solid var(--color-surface);
+  box-shadow: var(--shadow-medium);
 }
 .member-card__avatar {
   position: relative;
@@ -3420,6 +3433,13 @@ main > * {
   outline: 3px solid var(--color-secondary);
   outline-offset: 2px;
 }
+.ed-image__preview img.is-circle {
+  width: auto;
+  height: 92%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  object-fit: cover;
+}
 .ed-image__empty {
   padding: 0.5rem;
   text-align: center;
@@ -3561,5 +3581,80 @@ main > * {
 .editor-savebar__actions {
   display: flex;
   flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* ---------- /loggin: velg utsnitt (rundt bilde) ---------- */
+.cropper-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(7, 47, 55, 0.6);
+}
+.cropper {
+  display: grid;
+  gap: 1rem;
+  width: min(100%, 360px);
+  padding: 1.25rem;
+  background: var(--color-surface);
+  border-radius: var(--radius-large);
+  box-shadow: var(--shadow-medium);
+  outline: none;
+}
+.cropper__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.cropper__title {
+  font-size: var(--text-lg);
+}
+.cropper__view {
+  position: relative;
+  justify-self: center;
+  overflow: hidden;
+  border-radius: var(--radius-medium);
+  background: #111;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.cropper__view:active {
+  cursor: grabbing;
+}
+.cropper__view:focus-visible {
+  outline: 3px solid var(--color-secondary);
+  outline-offset: 3px;
+}
+.cropper__view img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: none;
+  pointer-events: none;
+}
+.cropper__mask {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 0 999px rgba(0, 0, 0, 0.55);
+  outline: 2px solid rgba(255, 255, 255, 0.85);
+  pointer-events: none;
+}
+.cropper__zoom {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.cropper__zoom input {
+  flex: 1;
+  accent-color: var(--color-primary);
+}
+.cropper__actions {
+  display: flex;
+  justify-content: flex-end;
   gap: 0.5rem;
 }
