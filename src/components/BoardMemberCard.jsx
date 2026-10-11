@@ -3,6 +3,7 @@ import { Mail } from "lucide-react";
 import { LinkedinIcon } from "./SocialIcons.jsx";
 import { assetUrl } from "../lib/assets.js";
 import { isFilled } from "../lib/config.js";
+import { HexPattern } from "./ScienceArt.jsx";
 
 function initialsOf(member) {
   const source = isFilled(member.name) ? member.name : member.role;
@@ -23,6 +24,7 @@ export default function BoardMemberCard({ member }) {
   return (
     <article className="member-card">
       <div className="member-card__photo">
+        <HexPattern opacity={0.16} size={46} />
         {hasImage ? (
           <img
             src={assetUrl(member.image)}

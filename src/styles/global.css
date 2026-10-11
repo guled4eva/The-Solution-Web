@@ -1729,21 +1729,32 @@ span.logo {
 .member-card__photo {
   display: grid;
   place-items: center;
-}
-.member-card__photo:has(> img) {
+  overflow: hidden;
+  color: #fff;
   background:
-    radial-gradient(circle at 50% 120%, rgba(31, 138, 112, 0.18), transparent 60%),
-    var(--color-primary-light);
+    radial-gradient(circle at 88% 8%, rgba(255, 138, 76, 0.45), transparent 42%),
+    radial-gradient(circle at 8% 100%, rgba(31, 138, 112, 0.75), transparent 55%),
+    linear-gradient(150deg, var(--color-primary-dark), var(--color-primary));
+}
+.member-card__photo .hex-pattern {
+  position: absolute;
+  inset: 0;
 }
 .member-card__photo img {
+  position: relative;
   width: min(62%, 220px);
   aspect-ratio: 1;
   height: auto;
+  padding: 5px;
   border-radius: 50%;
   object-fit: cover;
   object-position: center 30%;
-  border: 5px solid var(--color-surface);
-  box-shadow: var(--shadow-medium);
+  background: conic-gradient(from 200deg, var(--color-accent), #ffd27a, var(--color-secondary), var(--color-accent));
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  transition: transform var(--duration) var(--ease);
+}
+.member-card:hover .member-card__photo img {
+  transform: scale(1.04) rotate(-1.5deg);
 }
 .member-card__avatar {
   position: relative;
@@ -1751,9 +1762,6 @@ span.logo {
   place-items: center;
   width: 100%;
   height: 100%;
-  background:
-    radial-gradient(circle at 50% 120%, rgba(31, 138, 112, 0.18), transparent 60%),
-    var(--color-primary-light);
 }
 .member-card__hex {
   position: absolute;
@@ -1761,8 +1769,8 @@ span.logo {
   height: auto;
 }
 .member-card__hex path {
-  fill: var(--color-surface);
-  stroke: var(--color-primary);
+  fill: rgba(255, 255, 255, 0.1);
+  stroke: var(--color-accent);
   stroke-width: 2;
   stroke-dasharray: 4 5;
 }
@@ -1771,7 +1779,7 @@ span.logo {
   font-family: var(--font-display);
   font-size: 2rem;
   font-weight: 800;
-  color: var(--color-primary);
+  color: #fff;
 }
 .member-card__example {
   position: absolute;
