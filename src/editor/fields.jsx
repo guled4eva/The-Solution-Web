@@ -54,10 +54,19 @@ function ImageField({ field, value, onChange, ctx }) {
   const isPdf = field.accept === "pdf";
   const src = ctx.previews[value] || value;
 
-  const pick = async (e) => {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
+  const [dragging, setDragging] = useState(false);
+
+  const send = async (file) => {
+    if (!file || busy) return;
+    if (!isPdf && !file.type.startsWith("image/")) {
+      setError("Det du limte inn er ikke et bilde.");
+      return;
+    }
+    // Pasted screenshots are called "image.png" – give them a useful name
+    if (!isPdf && /^image\.(png|jpe?g|gif|webp)$/i.test(file.name)) {
+      const ext = file.type.split("/")[1].replace("jpeg", "jpg");
+      file = new File([file], `${field.folder || "bilde"}-limt-inn.${ext}`, { type: file.type });
+    }
     setBusy(true);
     setError("");
     const res = await ctx.upload(file, field.folder, isPdf);
@@ -66,13 +75,45 @@ function ImageField({ field, value, onChange, ctx }) {
     else setError(res.message);
   };
 
+  const pick = (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    send(file);
+  };
+
+  const fileFrom = (list) => [...(list || [])].find((f) => (isPdf ? /pdf$/i.test(f.type || f.name) : f.type.startsWith("image/")));
+
+  const onPaste = (e) => {
+    const items = [...(e.clipboardData?.items || [])];
+    const item = items.find((i) => i.kind === "file" && (isPdf ? i.type === "application/pdf" : i.type.startsWith("image/")));
+    if (!item) return;
+    e.preventDefault();
+    send(item.getAsFile());
+  };
+
   return (
     <div className="field">
       <span className="field__label" id={`${id}-label`}>
         {field.label}
       </span>
       <div className="ed-image">
-        <div className="ed-image__preview">
+        <div
+          className={`ed-image__preview ed-image__drop ${dragging ? "is-dragging" : ""}`}
+          tabIndex={0}
+          role="button"
+          aria-label={`${field.label}: trykk her og lim inn med Ctrl + V, eller dra en fil hit`}
+          onPaste={onPaste}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragging(true);
+          }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragging(false);
+            send(fileFrom(e.dataTransfer?.files));
+          }}
+        >
           {value ? (
             isPdf ? (
               <a href={src} target="_blank" rel="noreferrer" className="ed-image__file">
@@ -83,7 +124,9 @@ function ImageField({ field, value, onChange, ctx }) {
               <img src={src} alt="" />
             )
           ) : (
-            <span className="ed-image__empty">{isPdf ? "Ingen fil" : "Ingen bilde"}</span>
+            <span className="ed-image__empty">
+              {isPdf ? "Dra en PDF hit" : "Trykk her og lim inn (Ctrl + V), eller dra et bilde hit"}
+            </span>
           )}
         </div>
         <div className="ed-image__actions">
@@ -110,7 +153,10 @@ function ImageField({ field, value, onChange, ctx }) {
           {error}
         </p>
       )}
-      <Hint>{field.hint}</Hint>
+      <Hint>
+        {isPdf ? "" : "Du kan også kopiere et bilde, trykke på feltet og lime inn med Ctrl + V (Cmd + V på Mac). "}
+        {field.hint}
+      </Hint>
     </div>
   );
 }

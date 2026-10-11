@@ -3412,7 +3412,18 @@ main > * {
   height: 100%;
   object-fit: contain;
 }
+.ed-image__drop {
+  cursor: copy;
+}
+.ed-image__drop:focus-visible,
+.ed-image__drop.is-dragging {
+  outline: 3px solid var(--color-secondary);
+  outline-offset: 2px;
+}
 .ed-image__empty {
+  padding: 0.5rem;
+  text-align: center;
+  line-height: 1.35;
   font-size: var(--text-xs);
   color: var(--color-text-muted);
 }
