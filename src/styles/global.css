@@ -3017,3 +3017,197 @@ main > * {
     font-size: var(--text-base);
   }
 }
+
+/* ---------- /admin: faner og besøk ---------- */
+.admin-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1.5rem;
+  padding: 0.3rem;
+  width: fit-content;
+  max-width: 100%;
+  background: var(--color-surface-alt);
+  border-radius: var(--radius-pill);
+}
+.admin-tabs__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+.admin-tabs__tab.is-active {
+  background: var(--color-surface);
+  color: var(--color-primary);
+  box-shadow: var(--shadow-small);
+}
+.admin-visits {
+  padding: clamp(1.25rem, 0.75rem + 2vw, 2rem);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-large);
+  box-shadow: var(--shadow-small);
+}
+.admin-visits__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+.admin-visits .is-loading {
+  opacity: 0.55;
+  transition: opacity var(--duration);
+}
+.segmented {
+  display: inline-flex;
+  flex-wrap: wrap;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.segmented__btn {
+  padding: 0.35rem 0.85rem;
+  border: 0;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  cursor: pointer;
+}
+.segmented__btn + .segmented__btn {
+  border-left: 1px solid var(--color-border);
+}
+.segmented__btn.is-active {
+  background: var(--color-primary);
+  color: #fff;
+}
+.visit-chart {
+  margin: 0 0 2rem;
+}
+.visit-chart__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+}
+.visit-chart__readout {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  min-height: 1.4em;
+}
+.visit-chart__readout strong {
+  color: var(--color-text);
+}
+.visit-chart__plot {
+  position: relative;
+  height: 180px;
+  margin-top: 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+  background-image: linear-gradient(var(--color-border) 1px, transparent 1px);
+  background-size: 100% 50%;
+  background-position: 0 0;
+}
+.visit-chart__max {
+  position: absolute;
+  top: -0.6rem;
+  left: 0;
+  padding-right: 0.3rem;
+  background: var(--color-surface);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+.visit-chart__bars {
+  position: absolute;
+  inset: 0 0 0 2rem;
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+}
+.visit-chart__col {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.visit-chart__col:hover,
+.visit-chart__col.is-active {
+  background: var(--color-primary-light);
+}
+.visit-chart__bar {
+  display: block;
+  width: 100%;
+  min-height: 0;
+  background: var(--color-primary);
+  border-radius: 4px 4px 0 0;
+}
+.visit-chart__col.is-active .visit-chart__bar {
+  background: var(--color-secondary);
+}
+.visit-chart__axis {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.4rem 0 0 2rem;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+.visit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 0 2rem;
+}
+.visit-list {
+  margin-bottom: 1.75rem;
+}
+.visit-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+  display: grid;
+  gap: 0.7rem;
+}
+.visit-row__text {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: var(--text-sm);
+}
+.visit-row__name {
+  overflow-wrap: anywhere;
+}
+.visit-row__num {
+  font-weight: 700;
+  white-space: nowrap;
+}
+.visit-row__pct {
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+.visit-row__track {
+  display: block;
+  height: 8px;
+  margin-top: 0.3rem;
+  border-radius: 4px;
+  background: var(--color-surface-alt);
+}
+.visit-row__bar {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--color-secondary);
+}

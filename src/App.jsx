@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";
 import Footer from "./components/Footer.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
+import PageViewTracker from "./components/PageViewTracker.jsx";
 import Home from "./pages/Home.jsx";
 import Board from "./pages/Board.jsx";
 import Events from "./pages/Events.jsx";
@@ -26,6 +27,7 @@ export default function App() {
         Hopp til hovedinnhold
       </a>
       <ScrollToTop />
+      <PageViewTracker />
       <Navbar />
       <main id="hovedinnhold" tabIndex={-1}>
         <Routes>

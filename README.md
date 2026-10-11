@@ -148,6 +148,7 @@ Påmeldinger lagres i et **Google-regneark på foreningens Gmail-konto**. Et lit
 - har en egen side per arrangement, f.eks. **/admin/generalforsamling-2026**, med (1) hvor mange som kommer, (2) antall per matvalg (Halal/Vegansk/Nøtteallergi/Annet) og (3) navnelisten
 - sender en **oppsummering på e-post** når påmeldingsfristen for et arrangement har gått ut
 - **sletter påmeldingene automatisk 1 måned etter arrangementet** (kan også slettes med en gang med «Slett nå»)
+- **teller besøk på nettsiden** (fanen «Besøk på nettsiden» på /admin): antall besøk og sidevisninger per dag, hvor folk kommer fra (Google, Instagram, lenker, direkte …) og hvilke sider som er mest besøkt. Tellingen er anonym – ingen informasjonskapsler eller IP-adresser – og lagres i fanen «Besøk» i regnearket (én rad per dag, side og kilde). Tall eldre enn ca. 13 måneder slettes automatisk.
 
 Oppsett (én gang, ca. 10 minutter, logget inn som `thesolution.oslomet@gmail.com`):
 
@@ -166,6 +167,8 @@ Oppsett (én gang, ca. 10 minutter, logget inn som `thesolution.oslomet@gmail.co
 8. Test: meld deg på et arrangement, og sjekk at du ser påmeldingen på `/admin` og som en rad i regnearket.
 
 **Endrer noen skriptet senere**, må det distribueres på nytt: **Distribuer → Administrer distribusjoner → blyanten → Versjon: Ny versjon → Distribuer**. Adressen forblir den samme.
+
+**Spor en plakat eller en post:** legg til `?utm_source=navn` bak adressen, f.eks. `https://www.thesolutionoslomet.no/?utm_source=plakat` i QR-koden. Da vises den som egen kilde under «Kampanje».
 
 **Personvern:** Mat- og allergisvar (og særlig Halal) kan være sensitive opplysninger. Bare styret skal ha passordet til /admin og tilgang til regnearket. Påmeldingene slettes automatisk 1 måned etter arrangementet. Bytt `ADMIN_PASSWORD` når styret byttes.
 

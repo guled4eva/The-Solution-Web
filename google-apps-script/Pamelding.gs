@@ -5,6 +5,8 @@
  *  lagrer dem i et Google-regneark, viser dem på /admin og sender
  *  en oppsummering på e-post når påmeldingsfristen har gått ut, og
  *  sletter påmeldingene automatisk 1 måned etter arrangementet.
+ *  Teller også besøk på nettsiden (anonymt: ingen IP, ingen
+ *  informasjonskapsler) og viser dem på /admin.
  *
  *  Oppsett: se README.md, avsnittet «Påmelding og /admin».
  *  Kort fortalt:
@@ -31,6 +33,12 @@ const HEADERS = [
 const MAX_FAILED_LOGINS = 10; // per 10 minutter
 const DELETE_AFTER_DAYS = 30; // påmeldinger slettes så mange dager etter arrangementet
 
+const VISITS_SHEET = 'Besøk';
+const VISIT_HEADERS = ['Dato', 'Side', 'Kanal', 'Kilde', 'Sidevisninger', 'Besøk'];
+const VISIT_CHANNELS = ['Direkte', 'Søk', 'Sosiale medier', 'Lenke', 'Kampanje'];
+const KEEP_VISITS_DAYS = 400; // besøkstall slettes etter ca. 13 måneder
+const TIME_ZONE = 'Europe/Oslo';
+
 // ------------------------------------------------------------
 // Inngang fra nettsiden
 // ------------------------------------------------------------
@@ -45,6 +53,10 @@ function doPost(e) {
     switch (body.action) {
       case 'register':
         return json_(register_(body));
+      case 'visit':
+        return json_(visit_(body));
+      case 'stats':
+        return json_(withAuth_(body, () => ({ ok: true, visits: visitStats_(Number(body.days) || 30) })));
       case 'list':
         return json_(withAuth_(body, () => ({ ok: true, registrations: listAll_() })));
       case 'delete-event':
@@ -105,6 +117,68 @@ function register_(b) {
     lock.releaseLock();
   }
   return { ok: true, id: id };
+}
+
+// ------------------------------------------------------------
+// Besøkstelling – én rad per dag + side + kilde (ikke én rad per besøk)
+// ------------------------------------------------------------
+function visit_(b) {
+  let path = clean_(b.path, 150).toLowerCase();
+  if (path.charAt(0) !== '/') return { ok: false, error: 'invalid-input' };
+  if (/^\/(admin|loggin)(\/|$)/.test(path)) return { ok: true };
+  const channel = VISIT_CHANNELS.indexOf(b.channel) !== -1 ? b.channel : 'Lenke';
+  const source = clean_(b.source, 60) || channel;
+  const newVisit = b.newSession === true ? 1 : 0;
+  const today = dayKey_(new Date());
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const sh = visitsSheet_();
+    const last = sh.getLastRow();
+    // Dagens rader ligger nederst – les bare de siste radene
+    const first = Math.max(2, last - 400);
+    if (last >= first) {
+      const values = sh.getRange(first, 1, last - first + 1, 6).getValues();
+      for (let i = values.length - 1; i >= 0; i--) {
+        const r = values[i];
+        if (dayKey_(r[0]) !== today) break;
+        if (r[1] === path && r[2] === channel && r[3] === source) {
+          sh.getRange(first + i, 5, 1, 2).setValues([[Number(r[4]) + 1, Number(r[5]) + newVisit]]);
+          return { ok: true };
+        }
+      }
+    }
+    sh.appendRow([today, path, channel, source, 1, newVisit]);
+    return { ok: true };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function visitStats_(days) {
+  days = Math.min(Math.max(days, 1), KEEP_VISITS_DAYS);
+  const from = dayKey_(new Date(Date.now() - (days - 1) * 24 * 3600 * 1000));
+  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(VISITS_SHEET);
+  if (!sh) return [];
+  return sh
+    .getDataRange()
+    .getValues()
+    .slice(1)
+    .map((r) => ({ date: dayKey_(r[0]), path: String(r[1]), channel: String(r[2]), source: String(r[3]), views: Number(r[4]) || 0, visits: Number(r[5]) || 0 }))
+    .filter((r) => r.date && r.date >= from);
+}
+
+function deleteOldVisits() {
+  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(VISITS_SHEET);
+  if (!sh) return 0;
+  const limit = dayKey_(new Date(Date.now() - KEEP_VISITS_DAYS * 24 * 3600 * 1000));
+  const values = sh.getDataRange().getValues();
+  // Radene ligger i datorekkefølge: slett de eldste i én operasjon
+  let count = 0;
+  while (count + 1 < values.length && dayKey_(values[count + 1][0]) < limit) count++;
+  if (count) sh.deleteRows(2, count);
+  return count;
 }
 
 // ------------------------------------------------------------
@@ -176,6 +250,7 @@ function rowToObject_(r) {
 function hourly() {
   sendDeadlineSummaries();
   deleteOldRegistrations();
+  deleteOldVisits();
 }
 
 /** Sletter påmeldinger når arrangementet er mer enn DELETE_AFTER_DAYS dager siden. */
@@ -255,6 +330,7 @@ function summaryText_(regs) {
 // ------------------------------------------------------------
 function setup() {
   sheet_();
+  visitsSheet_();
   ScriptApp.getProjectTriggers()
     .filter((t) => ['sendDeadlineSummaries', 'hourly'].indexOf(t.getHandlerFunction()) !== -1)
     .forEach((t) => ScriptApp.deleteTrigger(t));
@@ -277,6 +353,24 @@ function sheet_() {
     sh.setFrozenRows(1);
   }
   return sh;
+}
+
+function visitsSheet_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sh = ss.getSheetByName(VISITS_SHEET);
+  if (!sh) {
+    sh = ss.insertSheet(VISITS_SHEET);
+    sh.appendRow(VISIT_HEADERS);
+    sh.setFrozenRows(1);
+    sh.getRange('A:A').setNumberFormat('@'); // datoen lagres som tekst (ÅÅÅÅ-MM-DD)
+  }
+  return sh;
+}
+
+function dayKey_(v) {
+  if (v instanceof Date) return isNaN(v) ? '' : Utilities.formatDate(v, TIME_ZONE, 'yyyy-MM-dd');
+  const s = String(v || '');
+  return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : '';
 }
 
 function validDate_(v) {

@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
+  BarChart3,
   Clock,
   Copy,
   Download,
@@ -20,6 +21,7 @@ import { formatDeadline, formatLongDate, formatShortDate, isPast, parseLocalDate
 import { DIET_OPTIONS, callScript, dietText, isValidScriptUrl } from "../lib/registrations.js";
 import { usePageTitle } from "../hooks/usePageTitle.js";
 import SimpleAdmin from "./SimpleAdmin.jsx";
+import AdminVisits from "./AdminVisits.jsx";
 
 /*
  * /admin            → overview: one card per event with number of sign-ups
@@ -311,13 +313,16 @@ function EventDetail({ group, onDelete, deleting }) {
 // Page
 // ------------------------------------------------------------------
 export default function Admin() {
-  usePageTitle("Admin – påmeldinger");
+  usePageTitle("Admin");
   useNoIndex();
   return isValidScriptUrl(siteConfig.registrationScriptUrl) ? <ScriptAdmin /> : <SimpleAdmin />;
 }
 
 function ScriptAdmin() {
   const { slug } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const showVisits = !slug && searchParams.get("vis") === "besok";
+  const [reloadKey, setReloadKey] = useState(0);
   const scriptUrl = siteConfig.registrationScriptUrl;
 
   const [password, setPassword] = useState(readSession);
@@ -402,11 +407,14 @@ function ScriptAdmin() {
                 Bare for styret
               </p>
             )}
-            <h1 className="admin__title">Påmeldinger</h1>
+            <h1 className="admin__title">{showVisits ? "Besøk" : "Påmeldinger"}</h1>
           </div>
           {loggedIn && (
             <div className="admin__toolbar">
-              <button type="button" className="btn btn--secondary btn--sm" onClick={() => load(password)} disabled={loading}>
+              <button type="button" className="btn btn--secondary btn--sm" onClick={() => {
+                  load(password);
+                  setReloadKey((k) => k + 1);
+                }} disabled={loading}>
                 {loading ? <Loader2 size={16} className="spin" aria-hidden="true" /> : <RefreshCw size={16} aria-hidden="true" />}
                 <span>Oppdater</span>
               </button>
@@ -453,7 +461,31 @@ function ScriptAdmin() {
                 <p>{error}</p>
               </FormStatus>
             )}
-            {slug ? (
+            {!slug && (
+              <div className="admin-tabs" role="tablist" aria-label="Velg visning">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={!showVisits}
+                  className={`admin-tabs__tab ${!showVisits ? "is-active" : ""}`}
+                  onClick={() => setSearchParams({})}
+                >
+                  <Users size={16} aria-hidden="true" /> Påmeldinger
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={showVisits}
+                  className={`admin-tabs__tab ${showVisits ? "is-active" : ""}`}
+                  onClick={() => setSearchParams({ vis: "besok" })}
+                >
+                  <BarChart3 size={16} aria-hidden="true" /> Besøk på nettsiden
+                </button>
+              </div>
+            )}
+            {showVisits ? (
+              <AdminVisits scriptUrl={scriptUrl} password={password} errorTexts={errorTexts} reloadKey={reloadKey} />
+            ) : slug ? (
               current ? (
                 <EventDetail group={current} onDelete={handleDelete} deleting={deleting} />
               ) : (
