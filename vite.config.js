@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, mkdirSync, readdirSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
@@ -14,6 +14,7 @@ import react from "@vitejs/plugin-react";
  * endres til "/repo-navn/".
  */
 const BASE = "/";
+const SITE_URL = "https://www.thesolutionoslomet.no";
 
 // Pages that get their own HTML copy, so direct links and refresh work on GitHub Pages.
 const STATIC_ROUTES = ["styret", "arrangementer", "forslagsboksen", "om-oss", "kontakt", "admin", "loggin"];
@@ -70,6 +71,23 @@ function githubPagesRoutes() {
             copyTo(`admin/${slug}.html`);
           }
         });
+
+      // sitemap.xml + robots.txt for Google (board-only pages are left out)
+      const publicPages = ["", "styret", "arrangementer", "forslagsboksen", "om-oss", "kontakt"];
+      const eventPages = eventFiles
+        .filter((file) => file.endsWith(".json"))
+        .map((file) => slugify(file.replace(/\.json$/, "")))
+        .filter(Boolean)
+        .map((slug) => `arrangementer/${slug}`);
+      const urls = [...publicPages, ...eventPages].map((path) => `  <url><loc>${SITE_URL}/${path}</loc></url>`);
+      writeFileSync(
+        join(outDir, "sitemap.xml"),
+        `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>\n`
+      );
+      writeFileSync(
+        join(outDir, "robots.txt"),
+        `User-agent: *\nDisallow: /admin\nDisallow: /loggin\nDisallow: /tina-admin\n\nSitemap: ${SITE_URL}/sitemap.xml\n`
+      );
     },
   };
 }
