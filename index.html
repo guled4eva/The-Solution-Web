@@ -11,6 +11,10 @@
     />
     <meta name="theme-color" content="#0B4F5C" />
 
+    <!-- Ikoner: Google viser favicon-48/96/192 i søkeresultatene -->
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
@@ -27,6 +31,31 @@
     <meta property="og:url" content="https://www.thesolutionoslomet.no/" />
     <meta property="og:image" content="https://www.thesolutionoslomet.no/og-image.png" />
     <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Forteller Google navnet og logoen til nettstedet -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "name": "The Solution",
+            "alternateName": ["The Solution OsloMet", "The Solution – Bioteknologi og kjemi"],
+            "url": "https://www.thesolutionoslomet.no/"
+          },
+          {
+            "@type": "Organization",
+            "name": "The Solution",
+            "url": "https://www.thesolutionoslomet.no/",
+            "logo": "https://www.thesolutionoslomet.no/favicon-512.png",
+            "sameAs": [
+              "https://www.instagram.com/thesolution_oslomet/",
+              "https://www.linkedin.com/company/the-solution-oslomet/"
+            ]
+          }
+        ]
+      }
+    </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
