@@ -2,12 +2,14 @@ import { ArrowRight, Briefcase, FlaskConical, Lightbulb, Users } from "lucide-re
 import Button from "../components/Button.jsx";
 import EventCard from "../components/EventCard.jsx";
 import EmptyState from "../components/EmptyState.jsx";
+import PhotoGallery from "../components/PhotoGallery.jsx";
 import Logo from "../components/Logo.jsx";
 import Paragraphs from "../components/Paragraphs.jsx";
 import Reveal from "../components/Reveal.jsx";
 import SectionHeading from "../components/SectionHeading.jsx";
 import { BondDivider, HexPattern, MoleculeHero } from "../components/ScienceArt.jsx";
 import { siteConfig } from "../data/siteConfig.js";
+import { gallery } from "../data/gallery.js";
 import { texts } from "../data/texts.js";
 import { getUpcomingEvents } from "../lib/events.js";
 import { usePageTitle } from "../hooks/usePageTitle.js";
@@ -161,6 +163,16 @@ export default function Home() {
           )}
         </div>
       </section>
+
+      {/* ---------- PHOTO GALLERY (edited under «Galleri» at /loggin) ---------- */}
+      {gallery.show && gallery.images.length > 0 && (
+        <section className="section section--gallery" aria-labelledby="gallery-title">
+          <div className="container">
+            <SectionHeading id="gallery-title" eyebrow="Bilder" title={gallery.title} />
+          </div>
+          <PhotoGallery images={gallery.images} />
+        </section>
+      )}
 
       {/* ---------- SUGGESTION CTA ---------- */}
       <section className="section" aria-labelledby="cta-title">

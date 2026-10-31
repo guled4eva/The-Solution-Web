@@ -17,7 +17,7 @@ const BASE = "/";
 const SITE_URL = "https://www.thesolutionoslomet.no";
 
 // Pages that get their own HTML copy, so direct links and refresh work on GitHub Pages.
-const STATIC_ROUTES = ["styret", "arrangementer", "forslagsboksen", "om-oss", "kontakt", "admin", "loggin"];
+const STATIC_ROUTES = ["styret", "arrangementer", "forslagsboksen", "om-oss", "kontakt", "admin", "loggin", "bedrift", "bedrift/jobber", "bedrift/intervjuer"];
 
 /** Same slug rules as src/lib/events.js. */
 function slugify(text) {
@@ -72,14 +72,20 @@ function githubPagesRoutes() {
           }
         });
 
+      const interviewDir = "content/intervjuer";
+      const interviewSlugs = (existsSync(interviewDir) ? readdirSync(interviewDir) : [])
+        .filter((file) => file.endsWith(".json"))
+        .map((file) => file.replace(/\.json$/, ""));
+      interviewSlugs.forEach((slug) => copyTo(`bedrift/intervjuer/${slug}.html`));
+
       // sitemap.xml + robots.txt for Google (board-only pages are left out)
-      const publicPages = ["", "styret", "arrangementer", "forslagsboksen", "om-oss", "kontakt"];
+      const publicPages = ["", "styret", "arrangementer", "bedrift", "bedrift/jobber", "bedrift/intervjuer", "forslagsboksen", "om-oss", "kontakt"];
       const eventPages = eventFiles
         .filter((file) => file.endsWith(".json"))
         .map((file) => slugify(file.replace(/\.json$/, "")))
         .filter(Boolean)
         .map((slug) => `arrangementer/${slug}`);
-      const urls = [...publicPages, ...eventPages].map((path) => `  <url><loc>${SITE_URL}/${path}</loc></url>`);
+      const urls = [...publicPages, ...eventPages, ...interviewSlugs.map((slug) => `bedrift/intervjuer/${slug}`)].map((path) => `  <url><loc>${SITE_URL}/${path}</loc></url>`);
       writeFileSync(
         join(outDir, "sitemap.xml"),
         `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>\n`

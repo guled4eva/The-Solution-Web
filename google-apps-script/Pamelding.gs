@@ -45,9 +45,11 @@ const TIME_ZONE = 'Europe/Oslo';
 
 const DEFAULT_REPO = 'guled4eva/The-Solution-Web';
 const DEFAULT_BRANCH = 'main';
-// Bare disse filene og mappene kan endres fra /loggin
-const CONTENT_PATH = /^content\/(arrangementer\/[a-z0-9][a-z0-9-]{0,80}|styret\/styret|tekster\/tekster|historie\/historie|innstillinger\/nettside)\.json$/;
-const UPLOAD_FOLDERS = ['arrangementer', 'styret', 'dokumenter', 'logo', 'diverse'];
+// Bare JSON-filer i content/<mappe>/ kan endres fra /loggin, og bare bilder/PDF i public/images/<mappe>/
+const CONTENT_PATH = /^content\/[a-z]{2,30}\/[a-z0-9][a-z0-9-]{0,80}\.json$/;
+// Filer som alltid skal finnes (kan endres, men ikke slettes)
+const FIXED_FILES = ['styret/styret', 'tekster/tekster', 'historie/historie', 'innstillinger/nettside', 'bedrift/bedrift', 'galleri/galleri'];
+const UPLOAD_FOLDER = /^[a-z]{2,30}$/;
 const UPLOAD_TYPES = { jpg: 'image', jpeg: 'image', png: 'image', webp: 'image', gif: 'image', pdf: 'pdf' };
 const MAX_UPLOAD_BYTES = 15 * 1024 * 1024;
 const WEAK_PASSWORDS = ['oslomet2025', 'biokjemi2025', 'passord', 'password'];
@@ -325,7 +327,8 @@ function contentSave_(b) {
 
 function contentDelete_(b) {
   const path = String(b.path || '');
-  if (!/^content\/arrangementer\//.test(path) || !CONTENT_PATH.test(path) || !b.sha) return { ok: false, error: 'invalid-path' };
+  const name = path.replace(/^content\//, '').replace(/\.json$/, '');
+  if (!CONTENT_PATH.test(path) || FIXED_FILES.indexOf(name) !== -1 || !b.sha) return { ok: false, error: 'invalid-path' };
   const res = github_('delete', '/contents/' + path, {
     message: 'Slettet via /loggin: ' + path.replace(/^content\//, ''),
     sha: String(b.sha),
@@ -337,7 +340,7 @@ function contentDelete_(b) {
 
 /** Uploads an image or PDF to public/images/<folder>/ and returns its web address. */
 function upload_(b) {
-  const folder = UPLOAD_FOLDERS.indexOf(b.folder) !== -1 ? b.folder : 'diverse';
+  const folder = UPLOAD_FOLDER.test(String(b.folder || '')) ? b.folder : 'diverse';
   const m = /^(.*?)\.([a-z0-9]+)$/i.exec(String(b.name || ''));
   const ext = m ? m[2].toLowerCase() : '';
   if (!UPLOAD_TYPES[ext]) return { ok: false, error: 'invalid-file-type' };

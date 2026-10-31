@@ -1,5 +1,5 @@
 import { useId, useRef, useState } from "react";
-import { ArrowDown, ArrowUp, ChevronDown, Crop, FileText, ImagePlus, Loader2, Plus, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ChevronDown, Crop, FileText, ImagePlus, Loader2, Plus, Trash2, X } from "lucide-react";
 import CircleCropper from "./CircleCropper.jsx";
 import { parseLocalDate } from "../lib/dates.js";
 
@@ -195,6 +195,152 @@ function ImageField({ field, value, onChange, ctx }) {
   );
 }
 
+/** Several pictures at once (the photo gallery): upload many, paste or drag; caption and order per picture. */
+function GalleryField({ field, value, onChange, ctx }) {
+  const items = Array.isArray(value) ? value : [];
+  const input = useRef(null);
+  const latest = useRef(items);
+  latest.current = items;
+  const [progress, setProgress] = useState(null); // { done, total }
+  const [error, setError] = useState("");
+  const [dragging, setDragging] = useState(false);
+
+  const addFiles = async (fileList) => {
+    const files = [...(fileList || [])].filter((f) => f.type.startsWith("image/"));
+    if (!files.length || progress) return;
+    setError("");
+    const failed = [];
+    for (let i = 0; i < files.length; i++) {
+      setProgress({ done: i, total: files.length });
+      let file = files[i];
+      if (/^image\.(png|jpe?g|gif|webp)$/i.test(file.name)) {
+        file = new File([file], `galleri-limt-inn.${file.type.split("/")[1].replace("jpeg", "jpg")}`, { type: file.type });
+      }
+      const res = await ctx.upload(file, field.folder, false);
+      if (res.ok) {
+        const next = [...latest.current, { image: res.url, caption: "" }];
+        latest.current = next;
+        onChange(next);
+      } else failed.push(`${files[i].name}: ${res.message}`);
+    }
+    setProgress(null);
+    if (failed.length) setError(failed.join(" "));
+  };
+
+  const set = (i, patch) => onChange(items.map((x, j) => (j === i ? { ...x, ...patch } : x)));
+  const move = (i, dir) => {
+    const j = i + dir;
+    if (j < 0 || j >= items.length) return;
+    const next = [...items];
+    [next[i], next[j]] = [next[j], next[i]];
+    onChange(next);
+  };
+
+  return (
+    <div className="field">
+      <span className="field__label">
+        {field.label} <span className="ed-gallery__count">({items.length})</span>
+      </span>
+      <ul className="ed-gallery">
+        {items.map((it, i) => (
+          <li key={`${it.image}-${i}`} className="ed-gallery__item">
+            <img src={ctx.previews[it.image] || it.image} alt="" />
+            <input
+              className="field__control ed-gallery__caption"
+              placeholder="Bildetekst (valgfri)"
+              value={it.caption || ""}
+              onChange={(e) => set(i, { caption: e.target.value })}
+              aria-label={`Bildetekst for bilde ${i + 1}`}
+            />
+            <div className="ed-gallery__tools">
+              <button type="button" className="ed-icon-btn" onClick={() => move(i, -1)} disabled={i === 0} aria-label="Flytt til venstre">
+                <ArrowLeft size={16} aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                className="ed-icon-btn"
+                onClick={() => move(i, 1)}
+                disabled={i === items.length - 1}
+                aria-label="Flytt til høyre"
+              >
+                <ArrowRight size={16} aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                className="ed-icon-btn ed-icon-btn--danger"
+                onClick={() => window.confirm("Fjerne bildet fra galleriet?") && onChange(items.filter((_, j) => j !== i))}
+                aria-label={`Fjern bilde ${i + 1}`}
+              >
+                <Trash2 size={16} aria-hidden="true" />
+              </button>
+            </div>
+          </li>
+        ))}
+        <li>
+          <div
+            className={`ed-gallery__add ${dragging ? "is-dragging" : ""}`}
+            tabIndex={0}
+            role="button"
+            aria-label="Legg til bilder: trykk for å velge, lim inn med Ctrl + V, eller dra bilder hit"
+            onClick={() => !progress && input.current?.click()}
+            onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), input.current?.click())}
+            onPaste={(e) => {
+              const files = [...(e.clipboardData?.items || [])].filter((x) => x.kind === "file").map((x) => x.getAsFile());
+              if (files.length) {
+                e.preventDefault();
+                addFiles(files);
+              }
+            }}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragging(true);
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setDragging(false);
+              addFiles(e.dataTransfer?.files);
+            }}
+          >
+            {progress ? (
+              <>
+                <Loader2 size={24} className="spin" aria-hidden="true" />
+                <span>
+                  Laster opp {progress.done + 1} av {progress.total} …
+                </span>
+              </>
+            ) : (
+              <>
+                <ImagePlus size={24} aria-hidden="true" />
+                <span>Legg til bilder</span>
+                <small>Velg flere, lim inn eller dra hit</small>
+              </>
+            )}
+          </div>
+          <input
+            ref={input}
+            type="file"
+            hidden
+            multiple
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            onChange={(e) => {
+              const files = [...e.target.files];
+              e.target.value = "";
+              addFiles(files);
+            }}
+          />
+        </li>
+      </ul>
+      {error && (
+        <p className="field__error" role="alert">
+          {error}
+        </p>
+      )}
+      <Hint>{field.hint}</Hint>
+    </div>
+  );
+}
+
 function StringList({ field, value, onChange }) {
   const items = Array.isArray(value) ? value : [];
   const set = (i, v) => onChange(items.map((x, j) => (j === i ? v : x)));
@@ -328,6 +474,8 @@ function Field({ field, data, onChange, ctx }) {
       );
     case "image":
       return <ImageField field={field} value={value || ""} onChange={set} ctx={ctx} />;
+    case "gallery":
+      return <GalleryField field={field} value={value} onChange={set} ctx={ctx} />;
     case "stringList":
       return <StringList field={field} value={value} onChange={set} />;
     case "list":

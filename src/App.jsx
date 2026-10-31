@@ -13,6 +13,10 @@ import Contact from "./pages/Contact.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import Editor from "./pages/Editor.jsx";
 import Admin from "./pages/Admin.jsx";
+import Industry from "./pages/Industry.jsx";
+import Jobs from "./pages/Jobs.jsx";
+import Interviews from "./pages/Interviews.jsx";
+import Interview from "./pages/Interview.jsx";
 
 export default function App() {
   return (
@@ -35,6 +39,10 @@ export default function App() {
           <Route path="/styret" element={<Board />} />
           <Route path="/arrangementer" element={<Events />} />
           <Route path="/arrangementer/:slug" element={<EventDetails />} />
+          <Route path="/bedrift" element={<Industry />} />
+          <Route path="/bedrift/jobber" element={<Jobs />} />
+          <Route path="/bedrift/intervjuer" element={<Interviews />} />
+          <Route path="/bedrift/intervjuer/:slug" element={<Interview />} />
           <Route path="/forslagsboksen" element={<Suggestions />} />
           <Route path="/om-oss" element={<About />} />
           <Route path="/kontakt" element={<Contact />} />

@@ -1,39 +1,25 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Building2,
   Handshake,
   Loader2,
   Mail,
   MessageCircle,
-  Mic,
-  Presentation,
   Send,
   ShieldAlert,
-  Sparkles,
-  Store,
-  Coins,
 } from "lucide-react";
 import FormNotConfigured from "../components/FormNotConfigured.jsx";
 import FormStatus from "../components/FormStatus.jsx";
 import PageHeader from "../components/PageHeader.jsx";
 import SocialLinks, { getConfiguredSocials } from "../components/SocialLinks.jsx";
 import { siteConfig } from "../data/siteConfig.js";
-import { board } from "../data/board.js";
 import { texts } from "../data/texts.js";
 import { isDev, isFilled } from "../lib/config.js";
 import { EMAIL_PATTERN } from "../lib/forms.js";
 import { useFormSubmission } from "../hooks/useFormSubmission.js";
+import { cooperation, getIndustryEmail } from "../lib/contact.js";
 import { usePageTitle } from "../hooks/usePageTitle.js";
 
-const cooperation = [
-  { label: "Bedriftspresentasjoner", Icon: Presentation },
-  { label: "Bedriftsbesøk", Icon: Building2 },
-  { label: "Seminarer", Icon: Mic },
-  { label: "Stand på campus", Icon: Store },
-  { label: "Sponsing", Icon: Coins },
-  { label: "Andre relevante samarbeid", Icon: Sparkles },
-];
 
 const empty = { name: "", email: "", subject: "", message: "", _gotcha: "" };
 
@@ -46,15 +32,6 @@ function validate(v) {
   if (!v.message.trim()) errors.message = "Skriv inn en melding.";
   else if (v.message.trim().length < 10) errors.message = "Meldingen må være minst 10 tegn.";
   return errors;
-}
-
-/** Email for industry contact: industryEmail → board member "Industriansvarlig" → general email. */
-function getIndustryEmail() {
-  if (isFilled(siteConfig.industryEmail)) return siteConfig.industryEmail.trim();
-  const officer = board.find((m) => m.role === "Industriansvarlig" && isFilled(m.email));
-  if (officer) return officer.email.trim();
-  if (isFilled(siteConfig.email)) return siteConfig.email.trim();
-  return "";
 }
 
 function EmailDisplay({ email, placeholder, formAvailable }) {

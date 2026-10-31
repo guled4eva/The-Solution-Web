@@ -17,6 +17,10 @@ Der kan du endre:
 | Styret          | Navn, bilder, e-post og LinkedIn for styremedlemmene                       |
 | Tekster         | Tekstene på forsiden, «Om oss», «Styret» og «For bedrifter»                |
 | Historie        | Tidslinjen på «Om oss»                                                     |
+| Galleri         | Bildene som ruller på forsiden (last opp mange på en gang)                 |
+| Bedrift         | Tekstene og bildet på /bedrift                                             |
+| Stillinger      | Ledige stillinger på /bedrift/jobber (skjules automatisk etter fristen)    |
+| Intervjuer      | Intervjuer med tidligere studenter på /bedrift/intervjuer                  |
 | Innstillinger   | E-post, sosiale medier, vedtekter (PDF), tall på forsiden, Formspree       |
 
 Trykk **Lagre** når du er ferdig. Endringen lagres i GitHub, og nettsiden oppdateres av seg selv etter 1–2 minutter.

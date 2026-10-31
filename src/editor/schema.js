@@ -1,3 +1,5 @@
+import { Briefcase, MessageSquareQuote } from "lucide-react";
+
 /**
  * What can be edited on /loggin.
  * Each section is either one file ("single") or a folder with one file per item ("folder").
@@ -22,12 +24,21 @@ export function slugify(text) {
     .slice(0, 80);
 }
 
+export const JOB_TYPES = ["Sommerjobb", "Fast stilling", "Deltid", "Internship", "Trainee / graduate", "Masteroppgave", "Annet"];
+
+const todayKey = () => new Date().toISOString().slice(0, 10);
+
 export const SECTIONS = [
   {
     key: "arrangementer",
     label: "Arrangementer",
     kind: "folder",
     dir: "content/arrangementer",
+    newLabel: "Nytt arrangement",
+    allLabel: "Alle arrangementer",
+    urlPrefix: "/arrangementer/",
+    emptyText: "Ingen arrangementer ennå.",
+    slugFrom: (d) => d.title,
     itemLabel: (d) => d.title || "Uten tittel",
     newItem: () => ({
       title: "",
@@ -161,6 +172,110 @@ export const SECTIONS = [
           { name: "date", label: "Dato", type: "date", required: true },
           { name: "title", label: "Overskrift", type: "text", required: true },
           { name: "description", label: "Beskrivelse", type: "textarea", rows: 3 },
+        ],
+      },
+    ],
+  },
+  {
+    key: "galleri",
+    label: "Galleri",
+    kind: "single",
+    path: "content/galleri/galleri.json",
+    viewUrl: () => "/",
+    fields: [
+      { name: "show", label: "Vis galleriet på forsiden", type: "boolean", hint: "Bildene ruller sakte bortover under «Kommende arrangementer»." },
+      { name: "title", label: "Overskrift", type: "text", hint: "F.eks. «Fra arrangementene våre»." },
+      {
+        name: "images",
+        label: "Bilder",
+        type: "gallery",
+        folder: "galleri",
+        hint: "Last opp flere bilder på en gang, lim inn eller dra dem hit. Endre rekkefølgen med pilene. Bildeteksten er valgfri.",
+      },
+    ],
+  },
+  {
+    key: "bedrift",
+    label: "Bedrift",
+    kind: "single",
+    path: "content/bedrift/bedrift.json",
+    viewUrl: () => "/bedrift",
+    fields: [
+      { name: "title", label: "Overskrift øverst", type: "text" },
+      { name: "lead", label: "Introtekst øverst", type: "textarea", rows: 3 },
+      { name: "aboutTitle", label: "Overskrift – om samarbeid", type: "text" },
+      { name: "aboutText", label: "Tekst – om samarbeid", type: "textarea", rows: 6, hint: "Lag nytt avsnitt med en tom linje." },
+      { name: "image", label: "Bilde", type: "image", folder: "bedrift", hint: "F.eks. fra en bedriftspresentasjon. Tomt = grafikk." },
+      { name: "contactText", label: "Tekst – «Vil dere samarbeide med oss?»", type: "textarea", rows: 3 },
+    ],
+  },
+  {
+    key: "stillinger",
+    label: "Stillinger",
+    kind: "folder",
+    dir: "content/stillinger",
+    newLabel: "Ny stilling",
+    allLabel: "Alle stillinger",
+    urlPrefix: "/bedrift/jobber#",
+    emptyText: "Ingen stillinger ennå.",
+    listHint: "Stillinger med utløpt søknadsfrist skjules automatisk på nettsiden. Slett dem når de ikke trengs lenger.",
+    Icon: Briefcase,
+    slugFrom: (d) => [d.company, d.title].filter(Boolean).join(" "),
+    itemLabel: (d) => [d.title, d.company].filter(Boolean).join(" – ") || "Ny stilling",
+    itemMeta: (d) => {
+      if (!d.deadline) return "Løpende frist";
+      const expired = d.deadline < todayKey();
+      return `Frist ${d.deadline.split("-").reverse().join(".")}${expired ? " · utløpt" : ""}`;
+    },
+    sortItems: (list) =>
+      [...list].sort((a, b) => String(a.data.deadline || "9999").localeCompare(String(b.data.deadline || "9999"))),
+    newItem: () => ({ title: "", company: "", logo: "", type: "Sommerjobb", location: "", deadline: "", link: "", description: "" }),
+    viewUrl: () => "/bedrift/jobber",
+    fields: [
+      { name: "title", label: "Stilling", type: "text", required: true, hint: "F.eks. «Sommerstudent i analyselab»." },
+      { name: "company", label: "Bedrift", type: "text", required: true },
+      { name: "logo", label: "Bedriftens logo", type: "image", folder: "bedrifter", hint: "Tomt = forbokstaven i bedriftsnavnet." },
+      { name: "type", label: "Type", type: "select", options: JOB_TYPES, required: true },
+      { name: "location", label: "Sted", type: "text", hint: "F.eks. Oslo, eller «Oslo / hjemmekontor»." },
+      { name: "deadline", label: "Søknadsfrist", type: "date", hint: "Tomt = løpende. Stillingen skjules automatisk etter fristen." },
+      { name: "link", label: "Lenke til annonsen", type: "text", inputType: "url", required: true, hint: "Der studentene søker, f.eks. finn.no eller bedriftens side." },
+      { name: "description", label: "Kort beskrivelse", type: "textarea", rows: 4, hint: "2–4 setninger: hva jobben er og hvem den passer for." },
+    ],
+  },
+  {
+    key: "intervjuer",
+    label: "Intervjuer",
+    kind: "folder",
+    dir: "content/intervjuer",
+    newLabel: "Nytt intervju",
+    allLabel: "Alle intervjuer",
+    urlPrefix: "/bedrift/intervjuer/",
+    emptyText: "Ingen intervjuer ennå.",
+    Icon: MessageSquareQuote,
+    slugFrom: (d) => d.name,
+    itemLabel: (d) => d.name || "Nytt intervju",
+    itemMeta: (d) => [d.role, d.company].filter(Boolean).join(" – ") || "",
+    sortItems: (list) => [...list].sort((a, b) => String(b.data.date || "").localeCompare(String(a.data.date || ""))),
+    newItem: () => ({ name: "", role: "", company: "", graduated: "", image: "", date: todayKey(), intro: "", qa: [] }),
+    viewUrl: (slug) => `/bedrift/intervjuer/${slug}`,
+    fields: [
+      { name: "name", label: "Navn", type: "text", required: true },
+      { name: "role", label: "Stilling", type: "text", hint: "F.eks. «Forsker» eller «Laboratorieingeniør»." },
+      { name: "company", label: "Arbeidsplass", type: "text" },
+      { name: "graduated", label: "Utdanning", type: "text", hint: "F.eks. «Bioteknologi og kjemi, OsloMet 2022»." },
+      { name: "image", label: "Bilde", type: "image", folder: "intervjuer", crop: "circle" },
+      { name: "date", label: "Publisert", type: "date", required: true },
+      { name: "intro", label: "Ingress", type: "textarea", rows: 3, hint: "1–2 setninger som vises på oversikten." },
+      {
+        name: "qa",
+        label: "Spørsmål og svar",
+        type: "list",
+        addLabel: "Legg til spørsmål",
+        itemLabel: (q) => q.question || "Nytt spørsmål",
+        newItem: () => ({ question: "", answer: "" }),
+        fields: [
+          { name: "question", label: "Spørsmål", type: "text", required: true },
+          { name: "answer", label: "Svar", type: "textarea", rows: 5, hint: "Lag nytt avsnitt med en tom linje." },
         ],
       },
     ],

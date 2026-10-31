@@ -32,7 +32,7 @@ import { prepareUpload } from "../editor/upload.js";
  * GitHub key. The website is rebuilt automatically after each save (1–2 minutes).
  */
 
-const NEW = "__new__";
+const newKey = (section) => `__new__:${section.key}`;
 
 const errorTexts = {
   unauthorized: "Feil passord.",
@@ -54,11 +54,12 @@ const errorTexts = {
 const errorText = (res) =>
   errorTexts[res?.error] || `Noe gikk galt. Prøv igjen.${res?.error ? ` (Feilkode: ${[res.error, res.detail].filter(Boolean).join(": ")})` : ""}`;
 
-const eventPath = (slug) => `content/arrangementer/${slug}.json`;
+const itemPath = (section, slug) => `${section.dir}/${slug}.json`;
 const slugOf = (path) => path.split("/").pop().replace(/\.json$/, "");
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
-function sortEvents(list) {
+/** Default order in a folder list: upcoming/newest dates first. */
+function sortByDate(list) {
   return [...list].sort((a, b) => {
     const ua = isUpcomingDate(a.data.date);
     const ub = isUpcomingDate(b.data.date);
@@ -85,6 +86,11 @@ export default function Editor() {
     );
   }
   return <EditorApp />;
+}
+
+function defaultMeta(d) {
+  if (!d.date) return "Ingen dato";
+  return `${formatShortDate(d.date)}${isUpcomingDate(d.date) ? " · kommende" : ""}`;
 }
 
 function EditorApp() {
@@ -163,8 +169,9 @@ function EditorApp() {
   }, [sectionKey, itemSlug]);
 
   // ------- what is being edited right now -------
+  const NEW = newKey(section);
   const currentPath =
-    section.kind === "single" ? section.path : itemSlug === "ny" ? NEW : itemSlug ? eventPath(itemSlug) : null;
+    section.kind === "single" ? section.path : itemSlug === "ny" ? NEW : itemSlug ? itemPath(section, itemSlug) : null;
   const saved = currentPath && currentPath !== NEW ? files?.[currentPath] : null;
   const data = currentPath ? drafts[currentPath] ?? saved?.data ?? (currentPath === NEW ? section.newItem() : null) : null;
   const dirty = currentPath ? currentPath in drafts : false;
@@ -185,7 +192,7 @@ function EditorApp() {
       delete copy[currentPath];
       return copy;
     });
-    if (currentPath === NEW) navigate("/loggin/arrangementer");
+    if (currentPath === NEW) navigate(`/loggin/${section.key}`);
   };
 
   const handleScriptError = (res) => {
@@ -219,17 +226,17 @@ function EditorApp() {
     let path = currentPath;
     let slug = itemSlug;
     if (currentPath === NEW) {
-      slug = slugify(newSlug || data.title);
+      slug = slugify(newSlug || section.slugFrom(data));
       if (!slug) problems.push("Adresse");
-      else if (files[eventPath(slug)]) {
+      else if (files[itemPath(section, slug)]) {
         setMessage({
           type: "error",
           title: "Adressen er i bruk",
-          text: `Det finnes allerede et arrangement med adressen /arrangementer/${slug}. Velg en annen adresse (f.eks. med årstall).`,
+          text: `Det finnes allerede noe med adressen ${section.urlPrefix}${slug}. Velg en annen adresse (f.eks. med årstall).`,
         });
         return;
       }
-      path = eventPath(slug);
+      path = itemPath(section, slug);
     }
     if (problems.length) {
       setMessage({ type: "error", title: "Fyll ut det som mangler", text: problems.join(", ") });
@@ -259,13 +266,13 @@ function EditorApp() {
     if (currentPath === NEW) {
       setNewSlug("");
       keepMessage.current = true;
-      navigate(`/loggin/arrangementer/${slug}`, { replace: true });
+      navigate(`/loggin/${section.key}/${slug}`, { replace: true });
     }
   };
 
   const remove = async () => {
     if (!saved) return;
-    if (!window.confirm(`Slette «${data.title || itemSlug}» fra nettsiden?\n\nDette kan ikke angres her.`)) return;
+    if (!window.confirm(`Slette «${section.itemLabel(data) || itemSlug}» fra nettsiden?\n\nDette kan ikke angres her.`)) return;
     setSaving(true);
     const res = await callScript(scriptUrl, { action: "content-delete", password, path: currentPath, sha: saved.sha });
     setSaving(false);
@@ -280,7 +287,7 @@ function EditorApp() {
       delete copy[currentPath];
       return copy;
     });
-    navigate("/loggin/arrangementer", { replace: true });
+    navigate(`/loggin/${section.key}`, { replace: true });
   };
 
   const reload = async () => {
@@ -362,16 +369,17 @@ function EditorApp() {
   }
 
   // ------- editor -------
-  const events =
+  const ItemIcon = section.Icon || CalendarDays;
+  const items =
     section.kind === "folder"
-      ? sortEvents(
+      ? (section.sortItems || sortByDate)(
           Object.entries(files)
             .filter(([p]) => p.startsWith(`${section.dir}/`))
             .map(([p, f]) => ({ path: p, slug: slugOf(p), data: drafts[p] ?? f.data }))
         )
       : [];
   const sectionDirty = (s) =>
-    dirtyPaths.some((p) => (s.kind === "single" ? p === s.path : p === NEW || p.startsWith(`${s.dir}/`)));
+    dirtyPaths.some((p) => (s.kind === "single" ? p === s.path : p === newKey(s) || p.startsWith(`${s.dir}/`)));
   const ctx = { upload, previews };
   const viewUrl = section.viewUrl && (section.kind === "single" ? section.viewUrl() : saved ? section.viewUrl(itemSlug) : null);
 
@@ -418,30 +426,28 @@ function EditorApp() {
           <div className="editor-panel">
             <div className="editor-panel__head">
               <h2 className="admin-event__title">{section.label}</h2>
-              <Link to="/loggin/arrangementer/ny" className="btn btn--primary btn--sm">
-                <Plus size={16} aria-hidden="true" /> <span>Nytt arrangement</span>
+              <Link to={`/loggin/${section.key}/ny`} className="btn btn--primary btn--sm">
+                <Plus size={16} aria-hidden="true" /> <span>{section.newLabel}</span>
               </Link>
             </div>
-            {events.length ? (
+            {section.listHint && <p className="field__hint editor-list-hint">{section.listHint}</p>}
+            {items.length ? (
               <ul className="editor-items">
-                {events.map((e) => (
+                {items.map((e) => (
                   <li key={e.path}>
-                    <Link to={`/loggin/arrangementer/${e.slug}`} className="editor-item">
-                      <CalendarDays size={18} aria-hidden="true" />
+                    <Link to={`/loggin/${section.key}/${e.slug}`} className="editor-item">
+                      <ItemIcon size={18} aria-hidden="true" />
                       <span className="editor-item__title">
                         {section.itemLabel(e.data)}
                         {e.path in drafts && <span className="editor-dot" title="Ikke lagret" aria-label="(ikke lagret)" />}
                       </span>
-                      <span className="editor-item__meta">
-                        {e.data.date ? formatShortDate(e.data.date) : "Ingen dato"}
-                        {isUpcomingDate(e.data.date) ? " · kommende" : ""}
-                      </span>
+                      <span className="editor-item__meta">{(section.itemMeta || defaultMeta)(e.data)}</span>
                     </Link>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="admin-empty">Ingen arrangementer ennå.</p>
+              <p className="admin-empty">{section.emptyText || "Ingenting her ennå."}</p>
             )}
           </div>
         ) : !data ? (
@@ -455,12 +461,12 @@ function EditorApp() {
             <div className="editor-panel__head">
               <div>
                 {section.kind === "folder" && (
-                  <Link to="/loggin/arrangementer" className="text-link admin__back">
-                    <ArrowLeft size={16} aria-hidden="true" /> Alle arrangementer
+                  <Link to={`/loggin/${section.key}`} className="text-link admin__back">
+                    <ArrowLeft size={16} aria-hidden="true" /> {section.allLabel}
                   </Link>
                 )}
                 <h2 className="admin-event__title">
-                  {section.kind === "folder" ? (currentPath === NEW ? "Nytt arrangement" : section.itemLabel(data)) : section.label}
+                  {section.kind === "folder" ? (currentPath === NEW ? section.newLabel : section.itemLabel(data)) : section.label}
                 </h2>
               </div>
               {viewUrl && (
@@ -484,18 +490,18 @@ function EditorApp() {
                   Adresse
                 </label>
                 <div className="editor-slug">
-                  <span>/arrangementer/</span>
+                  <span>{section.urlPrefix}</span>
                   <input
                     id="editor-slug"
                     className="field__control"
-                    value={newSlug || slugify(data.title)}
+                    value={newSlug || slugify(section.slugFrom(data))}
                     onChange={(e) => setNewSlug(e.target.value.toLowerCase())}
                     placeholder="f.eks. julebord-2026"
                     aria-describedby="editor-slug-hint"
                   />
                 </div>
                 <p id="editor-slug-hint" className="field__hint">
-                  Lages fra tittelen. Kan ikke endres etter at arrangementet er lagret.
+                  Lages automatisk. Kan ikke endres etter at det er lagret.
                 </p>
               </div>
             )}
