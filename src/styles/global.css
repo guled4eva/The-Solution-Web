@@ -4650,7 +4650,7 @@ a.job-card__cta:hover {
 }
 @media (max-width: 899px) {
   .job-detail__layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .job-detail__aside {
     order: -1;
@@ -4729,4 +4729,20 @@ a.job-card__cta:hover {
   margin: 1.5rem 0 0.5rem;
   font-size: var(--text-lg);
   color: var(--color-primary);
+}
+.job-detail__head > div:last-child {
+  min-width: 0;
+}
+.job-detail__title,
+.ad-text {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 599px) {
+  .job-detail__logo {
+    width: 56px;
+    height: 56px;
+  }
+  .job-detail__title {
+    font-size: var(--text-xl);
+  }
 }

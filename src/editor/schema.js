@@ -258,7 +258,7 @@ export const SECTIONS = [
         label: "Hele stillingsteksten",
         type: "textarea",
         rows: 14,
-        hint: "Vises når man trykker på stillingen. Tom linje = nytt avsnitt. Start en linje med «• » for punktliste.",
+        hint: "Vises når man trykker på stillingen. Tom linje = nytt avsnitt. «• » først på linjen = punktliste. «## » først = overskrift.",
       },
     ],
   },

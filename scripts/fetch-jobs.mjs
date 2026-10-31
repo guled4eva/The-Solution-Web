@@ -59,6 +59,16 @@ async function getJson(path, token, headers = {}) {
 }
 
 const lower = (s) => ` ${String(s || "").toLowerCase()} `;
+// Generelle titler som tas med bare hvis selve annonseteksten handler tydelig om faget
+const GENERIC = [
+  /ingeniør/, /tekniker/, /technician/, /engineer/, /scientist/, /forskningsassistent/, /research assistant/,
+  /avdelingsingeniør/, /overingeniør/, /produksjonsmedarbeider/, /produksjonsarbeider/, /operatør/,
+];
+const generic = (title) => {
+  const t = lower(title);
+  return GENERIC.some((re) => re.test(t)) && !EXCLUDE.some((re) => re.test(t));
+};
+
 const relevant = (title) => {
   const t = lower(title);
   return INCLUDE.some((re) => re.test(t)) && !EXCLUDE.some((re) => re.test(t));
@@ -79,6 +89,8 @@ function stripHtml(html) {
 function htmlToText(html) {
   return String(html || "")
     .replace(/\r/g, "")
+    .replace(/<h\d[^>]*>([\s\S]*?)<\/h\d>/gi, (m, t) => `\n\n## ${t.replace(/<[^>]+>/g, "").trim()}\n\n`)
+    .replace(/<p[^>]*>\s*<(strong|b)>([^<]{1,80})<\/\1>\s*<\/p>/gi, (m, tag, t) => `\n\n## ${t.trim()}\n\n`)
     .replace(/<li[^>]*>/gi, "\n• ")
     .replace(/<\/(p|div|h\d|ul|ol)>/gi, "\n\n")
     .replace(/<\/li>/gi, "")
@@ -87,6 +99,8 @@ function htmlToText(html) {
     .replace(/<[^>]+>/g, "")
     .replace(/&nbsp;/g, " ")
     .replace(/&amp;/g, "&")
+    .replace(/&#(\d+);/g, (m, n) => String.fromCodePoint(Number(n)))
+    .replace(/&#x([0-9a-f]+);/gi, (m, n) => String.fromCodePoint(parseInt(n, 16)))
     .replace(/&quot;/g, '"')
     .replace(/&#39;|&apos;/g, "'")
     .replace(/&lt;/g, "<")
@@ -172,7 +186,7 @@ function fieldOf(title, text) {
       bestScore = score;
     }
   }
-  return bestScore >= 2 ? best : null;
+  return bestScore >= 2 ? { name: best, score: bestScore } : null;
 }
 
 // ---------- Bare stillinger som passer for en bachelorgrad ----------
@@ -217,8 +231,8 @@ async function main() {
 
   // 2) Plukk ut aktive, relevante annonser
   const candidates = [...latest.values()].filter(
-    ({ item, entry }) => entry.status === "ACTIVE" && relevant(entry.title || item.title)
-  );
+    ({ item, entry }) => entry.status === "ACTIVE" && (relevant(entry.title || item.title) || generic(entry.title || item.title))
+  ).slice(0, 500);
   console.log(`${candidates.length} aktive og relevante.`);
 
   // 3) Hent hele annonsen for frist, sted og lenke
@@ -243,7 +257,9 @@ async function main() {
         console.log(`  (ikke bachelor) ${title}`);
         continue;
       }
-      const field = fieldOf(title, fullText);
+      const match = fieldOf(title, fullText);
+      // Generelle titler («ingeniør», «tekniker» …) må ha mye fagstoff i teksten
+      const field = match && (relevant(title) || match.score >= 8) ? match.name : null;
       if (!field) {
         console.log(`  (uten fagområde) ${title}`);
         continue;

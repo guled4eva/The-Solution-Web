@@ -1,6 +1,6 @@
 /**
  * Shows the text of a job ad: blank line = new paragraph, lines starting with «•» = bullet list,
- * a short line on its own (no full stop) = small heading.
+ * a line starting with «## » = small heading.
  */
 export default function AdText({ text }) {
   const blocks = String(text || "")
@@ -20,8 +20,8 @@ export default function AdText({ text }) {
             </ul>
           );
         }
-        if (lines.length === 1 && lines[0].length <= 60 && !/[.!?:]$/.test(lines[0])) {
-          return <h3 key={i}>{lines[0]}</h3>;
+        if (lines.length === 1 && lines[0].startsWith("## ")) {
+          return <h3 key={i}>{lines[0].slice(3)}</h3>;
         }
         return (
           <p key={i}>
