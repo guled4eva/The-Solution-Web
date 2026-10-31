@@ -7,6 +7,7 @@
  *  sletter påmeldingene automatisk 1 måned etter arrangementet.
  *  Teller også besøk på nettsiden (anonymt: ingen IP, ingen
  *  informasjonskapsler) og viser dem på /admin.
+ *  Tar imot Forslagsboksen og kontaktskjemaet (vises på /admin).
  *  Lagrer endringer fra redigeringspanelet på /loggin i GitHub
  *  (krever GITHUB_TOKEN – se README.md, «Redigering på /loggin»).
  *
@@ -36,6 +37,10 @@ const HEADERS = [
 ];
 const MAX_FAILED_LOGINS = 10; // per 10 minutter
 const DELETE_AFTER_DAYS = 30; // påmeldinger slettes så mange dager etter arrangementet
+
+const MESSAGES_SHEET = 'Forslag';
+const MESSAGE_HEADERS = ['Tidspunkt', 'Type', 'Kategori / emne', 'Navn', 'E-post', 'Melding', 'Anonym', 'ID', 'Lest'];
+const MESSAGE_KINDS = ['forslag', 'kontakt'];
 
 const VISITS_SHEET = 'Besøk';
 const VISIT_HEADERS = ['Dato', 'Side', 'Kanal', 'Kilde', 'Sidevisninger', 'Besøk'];
@@ -68,6 +73,14 @@ function doPost(e) {
     switch (body.action) {
       case 'register':
         return json_(register_(body));
+      case 'message':
+        return json_(message_(body));
+      case 'messages-list':
+        return json_(withAuth_(body, () => ({ ok: true, messages: listMessages_() })));
+      case 'message-update':
+        return json_(withAuth_(body, () => updateMessage_(body)));
+      case 'message-delete':
+        return json_(withAuth_(body, () => deleteMessage_(body)));
       case 'visit':
         return json_(visit_(body));
       case 'content-load':
@@ -140,6 +153,87 @@ function register_(b) {
     lock.releaseLock();
   }
   return { ok: true, id: id };
+}
+
+// ------------------------------------------------------------
+// Forslagsboksen og kontaktskjemaet
+// ------------------------------------------------------------
+function message_(b) {
+  const f = b.fields || {};
+  if (f._gotcha) return { ok: true }; // spam-felle
+  const kind = MESSAGE_KINDS.indexOf(b.kind) !== -1 ? b.kind : 'kontakt';
+  const text = clean_(f.forslag || f.melding, 5000);
+  if (text.length < 5) return { ok: false, error: 'invalid-input' };
+  const email = clean_(f.email, 200);
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return { ok: false, error: 'invalid-input' };
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    messagesSheet_().appendRow([
+      new Date(),
+      kind,
+      clean_(f.kategori || f.emne, 200),
+      clean_(f.navn, 120),
+      email,
+      text,
+      f.anonymt === 'Ja' ? 'Ja' : '',
+      Utilities.getUuid(),
+      '',
+    ]);
+  } finally {
+    lock.releaseLock();
+  }
+  return { ok: true };
+}
+
+function listMessages_() {
+  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(MESSAGES_SHEET);
+  if (!sh) return [];
+  return sh
+    .getDataRange()
+    .getValues()
+    .slice(1)
+    .filter((r) => r[7])
+    .map((r) => ({
+      timestamp: r[0] instanceof Date ? r[0].toISOString() : String(r[0]),
+      kind: String(r[1]),
+      subject: String(r[2]),
+      name: String(r[3]),
+      email: String(r[4]),
+      message: String(r[5]),
+      anonymous: r[6] === 'Ja',
+      id: String(r[7]),
+      read: r[8] === 'Ja',
+    }))
+    .reverse();
+}
+
+function findMessageRow_(sh, id) {
+  const ids = sh.getRange(1, 8, sh.getLastRow(), 1).getValues();
+  for (let i = 1; i < ids.length; i++) if (String(ids[i][0]) === id) return i + 1;
+  return 0;
+}
+
+function updateMessage_(b) {
+  const sh = messagesSheet_();
+  const row = findMessageRow_(sh, String(b.id || ''));
+  if (!row) return { ok: false, error: 'not-found' };
+  sh.getRange(row, 9).setValue(b.read ? 'Ja' : '');
+  return { ok: true };
+}
+
+function deleteMessage_(b) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const sh = messagesSheet_();
+    const row = findMessageRow_(sh, String(b.id || ''));
+    if (!row) return { ok: false, error: 'not-found' };
+    sh.deleteRow(row);
+    return { ok: true };
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 // ------------------------------------------------------------
@@ -491,6 +585,7 @@ function summaryText_(regs) {
 function setup() {
   sheet_();
   visitsSheet_();
+  messagesSheet_();
   ScriptApp.getProjectTriggers()
     .filter((t) => ['sendDeadlineSummaries', 'hourly'].indexOf(t.getHandlerFunction()) !== -1)
     .forEach((t) => ScriptApp.deleteTrigger(t));
@@ -520,6 +615,17 @@ function sheet_() {
   if (!sh) {
     sh = ss.insertSheet(SHEET_NAME);
     sh.appendRow(HEADERS);
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+function messagesSheet_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sh = ss.getSheetByName(MESSAGES_SHEET);
+  if (!sh) {
+    sh = ss.insertSheet(MESSAGES_SHEET);
+    sh.appendRow(MESSAGE_HEADERS);
     sh.setFrozenRows(1);
   }
   return sh;

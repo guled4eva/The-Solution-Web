@@ -55,7 +55,7 @@ export default function Contact() {
   usePageTitle("Kontakt oss");
   const [values, setValues] = useState(empty);
   const [errors, setErrors] = useState({});
-  const { status, errorMessage, submit, reset, configured } = useFormSubmission(siteConfig.formspreeContactEndpoint);
+  const { status, errorMessage, submit, reset, configured } = useFormSubmission(siteConfig.formspreeContactEndpoint, "kontakt");
   const statusRef = useRef(null);
   const refs = { name: useRef(null), email: useRef(null), subject: useRef(null), message: useRef(null) };
   const submitting = status === "submitting";

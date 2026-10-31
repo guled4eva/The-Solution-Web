@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   ArrowRight,
   BarChart3,
+  Lightbulb,
   Clock,
   Copy,
   Download,
@@ -23,6 +24,7 @@ import { usePageTitle } from "../hooks/usePageTitle.js";
 import { useNoIndex } from "../hooks/useNoIndex.js";
 import { readAdminSession, writeAdminSession } from "../lib/adminSession.js";
 import AdminVisits from "./AdminVisits.jsx";
+import AdminMessages from "./AdminMessages.jsx";
 
 /*
  * /admin            → overview: one card per event with number of sign-ups
@@ -304,7 +306,9 @@ export default function Admin() {
 function ScriptAdmin() {
   const { slug } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const showVisits = !slug && searchParams.get("vis") === "besok";
+  const view = slug ? "pamelding" : searchParams.get("vis") || "pamelding";
+  const showVisits = view === "besok";
+  const showMessages = view === "forslag";
   const [reloadKey, setReloadKey] = useState(0);
   const scriptUrl = siteConfig.registrationScriptUrl;
 
@@ -315,6 +319,7 @@ function ScriptAdmin() {
   const [error, setError] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [updatedAt, setUpdatedAt] = useState(null);
+  const [unread, setUnread] = useState(null);
 
   const load = useCallback(
     async (pw) => {
@@ -328,6 +333,10 @@ function ScriptAdmin() {
         setPassword(pw);
         writeAdminSession(pw);
         setUpdatedAt(new Date());
+        // Unread count for the «Forslag og meldinger» tab (ignored if the script is older)
+        callScript(scriptUrl, { action: "messages-list", password: pw }).then((m) => {
+          if (m?.ok && Array.isArray(m.messages)) setUnread(m.messages.filter((x) => !x.read).length);
+        });
       } else {
         const code = res?.error || "server-error";
         setError(errorTexts[code] || "Noe gikk galt. Prøv igjen.");
@@ -390,7 +399,7 @@ function ScriptAdmin() {
                 Bare for styret
               </p>
             )}
-            <h1 className="admin__title">{showVisits ? "Besøk" : "Påmeldinger"}</h1>
+            <h1 className="admin__title">{showVisits ? "Besøk" : showMessages ? "Forslag" : "Påmeldinger"}</h1>
           </div>
           {loggedIn && (
             <div className="admin__toolbar">
@@ -449,8 +458,8 @@ function ScriptAdmin() {
                 <button
                   type="button"
                   role="tab"
-                  aria-selected={!showVisits}
-                  className={`admin-tabs__tab ${!showVisits ? "is-active" : ""}`}
+                  aria-selected={!showVisits && !showMessages}
+                  className={`admin-tabs__tab ${!showVisits && !showMessages ? "is-active" : ""}`}
                   onClick={() => setSearchParams({})}
                 >
                   <Users size={16} aria-hidden="true" /> Påmeldinger
@@ -464,9 +473,27 @@ function ScriptAdmin() {
                 >
                   <BarChart3 size={16} aria-hidden="true" /> Besøk på nettsiden
                 </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={showMessages}
+                  className={`admin-tabs__tab ${showMessages ? "is-active" : ""}`}
+                  onClick={() => setSearchParams({ vis: "forslag" })}
+                >
+                  <Lightbulb size={16} aria-hidden="true" /> Forslag og meldinger
+                  {unread > 0 && <span className="admin-tabs__badge">{unread}</span>}
+                </button>
               </div>
             )}
-            {showVisits ? (
+            {showMessages ? (
+              <AdminMessages
+                scriptUrl={scriptUrl}
+                password={password}
+                errorTexts={errorTexts}
+                reloadKey={reloadKey}
+                onUnread={setUnread}
+              />
+            ) : showVisits ? (
               <AdminVisits scriptUrl={scriptUrl} password={password} errorTexts={errorTexts} reloadKey={reloadKey} />
             ) : slug ? (
               current ? (

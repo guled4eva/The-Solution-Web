@@ -1,17 +1,23 @@
 import { useCallback, useRef, useState } from "react";
 import { submitToFormspree } from "../lib/forms.js";
 import { isValidFormspreeEndpoint } from "../lib/config.js";
+import { siteConfig } from "../data/siteConfig.js";
+import { callScript, isValidScriptUrl } from "../lib/registrations.js";
 
 /**
- * Shared submit logic for the Formspree forms.
+ * Shared submit logic for the forms (Forslagsboksen, kontaktskjema).
+ * If the Google Apps Script is set up, messages are stored in the association's sheet and
+ * shown on /admin (kind = "forslag" | "kontakt"). Otherwise Formspree is used (one e-mail each).
  * status: "idle" | "submitting" | "success" | "error" | "not-configured"
  * A ref guards against double submits (e.g. double-clicks) even before React re-renders.
  */
-export function useFormSubmission(endpoint) {
+export function useFormSubmission(endpoint, kind) {
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const inFlight = useRef(false);
-  const configured = isValidFormspreeEndpoint(endpoint);
+  const scriptUrl = siteConfig.registrationScriptUrl;
+  const useScript = Boolean(kind) && isValidScriptUrl(scriptUrl);
+  const configured = useScript || isValidFormspreeEndpoint(endpoint);
 
   const submit = useCallback(
     async (payload) => {
@@ -23,7 +29,15 @@ export function useFormSubmission(endpoint) {
       inFlight.current = true;
       setStatus("submitting");
       setErrorMessage("");
-      const result = await submitToFormspree(endpoint, payload);
+      let result;
+      if (useScript) {
+        const res = await callScript(scriptUrl, { action: "message", kind, fields: payload });
+        result = res?.ok
+          ? { ok: true }
+          : { ok: false, reason: res?.error === "network" ? "network" : "error", message: res?.error === "invalid-input" ? "Sjekk at meldingen og e-postadressen er riktig." : "" };
+      } else {
+        result = await submitToFormspree(endpoint, payload);
+      }
       inFlight.current = false;
       if (result.ok) {
         setStatus("success");
@@ -33,7 +47,7 @@ export function useFormSubmission(endpoint) {
       setErrorMessage(result.reason === "network" ? "network" : result.message || "");
       return false;
     },
-    [endpoint, configured]
+    [endpoint, configured, useScript, scriptUrl, kind]
   );
 
   const reset = useCallback(() => {

@@ -59,7 +59,8 @@ export default function Suggestions() {
   const [errors, setErrors] = useState({});
   const [showSummary, setShowSummary] = useState(false);
   const { status, errorMessage, submit, reset, configured } = useFormSubmission(
-    siteConfig.formspreeSuggestionEndpoint
+    siteConfig.formspreeSuggestionEndpoint,
+    "forslag"
   );
   const statusRef = useRef(null);
   const fieldRefs = { category: useRef(null), suggestion: useRef(null), email: useRef(null) };

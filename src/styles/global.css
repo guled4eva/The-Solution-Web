@@ -4399,3 +4399,97 @@ main > * {
   background: var(--color-primary-light);
   outline: none;
 }
+
+/* ---------- /admin: forslag og meldinger ---------- */
+.admin-tabs__badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.msg-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.msg {
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-accent);
+  border-radius: var(--radius-medium);
+  background: var(--color-surface);
+}
+.msg.is-read {
+  border-left-color: var(--color-border);
+  background: var(--color-background);
+}
+.msg__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  font-size: var(--text-xs);
+}
+.msg__kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.1rem 0.55rem;
+  border-radius: var(--radius-pill);
+  font-weight: 700;
+}
+.msg__kind--forslag {
+  background: var(--color-accent-light);
+  color: #8a3b12;
+}
+.msg__kind--kontakt {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+.msg__new {
+  font-weight: 700;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.msg__date {
+  margin-left: auto;
+  color: var(--color-text-muted);
+}
+.msg__subject {
+  margin-top: 0.6rem;
+  font-size: var(--text-base);
+}
+.msg__text {
+  margin-top: 0.4rem;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.msg__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-top: 0.75rem;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+.msg__from a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.msg__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
