@@ -30,7 +30,7 @@ const INCLUDE = [
 // Ord som utelukker stillingen
 const EXCLUDE = [
   /lærer/, /lektor/, /renhold/, /kokk/, /barnehage/, /sykepleier/, /\blege\b/, /tannlege/, /kjemisk rens/,
-  /bioingeniør/, /overlege/, /legespesialist/, /cyber/, /sikkerhet/, /selger/, /\bikt\b/, /\bit[- ]/, /programvare/, /software/, /test(er|analytiker)/, /kundeservice/,
+  /bioingeniør/, /overlege/, /vedlikehold/, /høyspent/, /elkraft/, /apotek/, /\bvvs\b/, /legespesialist/, /cyber/, /sikkerhet/, /selger/, /\bikt\b/, /\bit[- ]/, /programvare/, /software/, /test(er|analytiker)/, /kundeservice/,
 ];
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
