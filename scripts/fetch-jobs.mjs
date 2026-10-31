@@ -64,6 +64,7 @@ const GENERIC = [
   /ingeniør/, /tekniker/, /technician/, /engineer/, /scientist/, /forskningsassistent/, /research assistant/,
   /avdelingsingeniør/, /overingeniør/, /produksjonsmedarbeider/, /produksjonsarbeider/, /operatør/,
 ];
+const CORE = /kjemi|kjemisk|chemi|biokjem|bioteknolog|biotech|laborator|analytisk|analytical|hplc|kromatograf|chromatograph|fermenter|molekylær|molecular|mikrobiolog|microbiolog|\bgmp\b|legemiddel|pharma|cellekultur|cell culture/g;
 const generic = (title) => {
   const t = lower(title);
   return GENERIC.some((re) => re.test(t)) && !EXCLUDE.some((re) => re.test(t));
@@ -162,9 +163,8 @@ const FIELDS = {
     /prøver/, /\bsamples?\b/, /akkreditert/, /iso 17025/,
   ],
   Prosessteknologi: [
-    /prosess/, /process/, /produksjon/, /production/, /manufactur/, /operatør/, /operator/, /fabrikk/, /factory/,
-    /\banlegg/, /\bplant\b/, /skalering/, /scale-up/, /oppskaler/, /\bgmp\b/, /industri/, /reaktor/, /reactor/,
-    /destillasjon/, /\bdrift\b/, /vedlikehold/,
+    /prosess/, /process/, /produksjon/, /production/, /manufactur/, /skalering/, /scale-up/, /oppskaler/,
+    /\bgmp\b/, /reaktor/, /reactor/, /destillasjon/, /kjemisk industri/, /prosessindustri/,
   ],
 };
 
@@ -258,8 +258,9 @@ async function main() {
         continue;
       }
       const match = fieldOf(title, fullText);
-      // Generelle titler («ingeniør», «tekniker» …) må ha mye fagstoff i teksten
-      const field = match && (relevant(title) || match.score >= 8) ? match.name : null;
+      // Generelle titler («ingeniør», «tekniker» …) må handle tydelig om kjemi/bioteknologi i teksten
+      const core = (lower(fullText).match(CORE) || []).length;
+      const field = match && (relevant(title) || core >= 3) ? match.name : null;
       if (!field) {
         console.log(`  (uten fagområde) ${title}`);
         continue;
