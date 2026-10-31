@@ -111,7 +111,6 @@ export default function JobDetail() {
                   Se annonsen på arbeidsplassen.nav.no <ExternalLink size={14} aria-hidden="true" />
                 </a>
               )}
-              {job.source === "nav" && <p className="job-card__source">Hentet fra arbeidsplassen.nav.no</p>}
             </div>
           </aside>
         </div>

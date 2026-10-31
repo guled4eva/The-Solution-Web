@@ -126,7 +126,7 @@ export default function Jobs() {
           </div>
 
           <p className="job-note">
-            <GraduationCap size={16} aria-hidden="true" /> Bare stillinger som passer for bachelorgrad. Stillinger med krav om master eller doktorgrad er tatt bort.
+            <GraduationCap size={16} aria-hidden="true" /> Stillinger som passer for deg med bachelorgrad.
           </p>
 
           {shown.length > 0 ? (

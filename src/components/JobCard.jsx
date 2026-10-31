@@ -54,7 +54,6 @@ export default function JobCard({ job, compact = false }) {
           </li>
         </ul>
         {!compact && job.description && <p className="job-card__desc">{job.description}</p>}
-        {!compact && job.source === "nav" && <p className="job-card__source">Fra arbeidsplassen.nav.no</p>}
       </div>
       {href && (
         <a href={href} target="_blank" rel="noreferrer" className="job-card__cta">
