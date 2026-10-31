@@ -21,7 +21,7 @@ const MAX_JOBS = 40;
 const INCLUDE = [
   /kjemi/, /kjemiker/, /biokjem/, /bioteknolog/, /molekylærbiolog/, /mikrobiolog/,
   /\blaborant/, /laboratorie(ingeniør|assistent|tekniker|leder|analytiker)?\b/, /\blab[- ]?(ingeniør|tekniker|assistent)/,
-  /analyseingeniør/, /(kjemisk|laboratorie)analytiker/, /\bbioingeniør/,
+  /analyseingeniør/, /(kjemisk|laboratorie)analytiker/,
   /prosess(ingeniør|operatør|tekniker|teknolog|ansvarlig|teknikk|kjemi)/, /kvalitetskontroll/, /\bqc\b/, /\bqa\b/, /\bgmp\b/,
   /fermentering/, /formulering/, /legemiddelproduksjon/,
   /\bchemist/, /\bchemical/, /chemistry/, /biochem/, /biotech/, /bioprocess/, /process (engineer|technician|chemist)/,
@@ -30,7 +30,7 @@ const INCLUDE = [
 // Ord som utelukker stillingen
 const EXCLUDE = [
   /lærer/, /lektor/, /renhold/, /kokk/, /barnehage/, /sykepleier/, /\blege\b/, /tannlege/, /kjemisk rens/,
-  /cyber/, /sikkerhet/, /selger/, /\bikt\b/, /\bit[- ]/, /programvare/, /software/, /test(er|analytiker)/,
+  /bioingeniør/, /overlege/, /legespesialist/, /cyber/, /sikkerhet/, /selger/, /\bikt\b/, /\bit[- ]/, /programvare/, /software/, /test(er|analytiker)/,
 ];
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
