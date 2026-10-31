@@ -199,6 +199,11 @@ async function main() {
     try {
       const full = await getJson(item.url, token);
       const ad = full.ad_content || full.json || full;
+      if (!globalThis.__printed) {
+        globalThis.__printed = true;
+        console.log("Felter i en annonse:", JSON.stringify(Object.keys(full)), JSON.stringify(Object.keys(ad)));
+        console.log("Eksempel:", JSON.stringify({ ...ad, description: undefined }).slice(0, 3000));
+      }
       if (ad.status && ad.status !== "ACTIVE") continue;
       const deadline = isoDate(ad.applicationDue);
       if (deadline && deadline < today) continue;
