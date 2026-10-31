@@ -17,17 +17,21 @@ const DAYS_BACK = 45; // se på annonser endret de siste 45 dagene
 const MAX_PAGES = 600;
 const MAX_JOBS = 40;
 
-// Ord i stillingstittelen som gjør stillingen relevant (små bokstaver)
+// Ord i stillingstittelen som gjør stillingen relevant. \b = ordgrense, så «qa» ikke treffer «uniqa».
 const INCLUDE = [
-  "kjemi", "kjemiker", "biokjem", "bioteknolog", "biotek", "molekylærbiolog", "mikrobiolog",
-  "laborant", "laboratorie", "labingeniør", "lab-ingeniør", "lab ingeniør", "analytiker", "analyseingeniør",
-  "prosessingeniør", "prosessoperatør", "prosesstekniker", "prosessteknolog", "prosessansvarlig",
-  "kvalitetskontroll", "qc ", "qa ", "gmp", "fermentering", "formulering", "farmasøyt", "legemiddelproduksjon",
-  "chemist", "chemical", "chemistry", "biochem", "biotech", "process engineer", "process technician",
-  "laboratory", "lab technician", "lab engineer", "analytical", "quality control", "bioprocess",
+  /kjemi/, /kjemiker/, /biokjem/, /bioteknolog/, /molekylærbiolog/, /mikrobiolog/,
+  /\blaborant/, /laboratorie(ingeniør|assistent|tekniker|leder|analytiker)?\b/, /\blab[- ]?(ingeniør|tekniker|assistent)/,
+  /analyseingeniør/, /(kjemisk|laboratorie)analytiker/, /\bbioingeniør/,
+  /prosess(ingeniør|operatør|tekniker|teknolog|ansvarlig|teknikk|kjemi)/, /kvalitetskontroll/, /\bqc\b/, /\bqa\b/, /\bgmp\b/,
+  /fermentering/, /formulering/, /legemiddelproduksjon/,
+  /\bchemist/, /\bchemical/, /chemistry/, /biochem/, /biotech/, /bioprocess/, /process (engineer|technician|chemist)/,
+  /\blaboratory\b/, /\blab (technician|engineer)/, /analytical/, /quality control/,
 ];
 // Ord som utelukker stillingen
-const EXCLUDE = ["lærer", "lektor", "renhold", "kokk", "barnehage", "sykepleier", "lege ", "tannlege", "kjemisk rens"];
+const EXCLUDE = [
+  /lærer/, /lektor/, /renhold/, /kokk/, /barnehage/, /sykepleier/, /\blege\b/, /tannlege/, /kjemisk rens/,
+  /cyber/, /sikkerhet/, /selger/, /\bikt\b/, /\bit[- ]/, /programvare/, /software/, /test(er|analytiker)/,
+];
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -57,7 +61,7 @@ async function getJson(path, token, headers = {}) {
 const lower = (s) => ` ${String(s || "").toLowerCase()} `;
 const relevant = (title) => {
   const t = lower(title);
-  return INCLUDE.some((w) => t.includes(w)) && !EXCLUDE.some((w) => t.includes(w));
+  return INCLUDE.some((re) => re.test(t)) && !EXCLUDE.some((re) => re.test(t));
 };
 
 function stripHtml(html) {
