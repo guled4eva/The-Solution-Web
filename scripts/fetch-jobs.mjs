@@ -75,6 +75,35 @@ function stripHtml(html) {
     .trim();
 }
 
+/** HTML from the ad → plain text with paragraphs (blank line) and bullet points («• »). */
+function htmlToText(html) {
+  return String(html || "")
+    .replace(/\r/g, "")
+    .replace(/<li[^>]*>/gi, "\n• ")
+    .replace(/<\/(p|div|h\d|ul|ol)>/gi, "\n\n")
+    .replace(/<\/li>/gi, "")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<(h\d)[^>]*>/gi, "\n\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&[a-z]+;/g, " ")
+    .replace(/[ \t]+/g, " ")
+    .replace(/ *\n */g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+const titleCase = (s) =>
+  String(s || "")
+    .toLowerCase()
+    .replace(/(^|[\s-])(\p{L})/gu, (m, a, b) => a + b.toUpperCase())
+    .replace(/\bOg\b/g, "og");
+
 function shorten(text, max = 320) {
   if (text.length <= max) return text;
   const cut = text.slice(0, max);
@@ -199,17 +228,15 @@ async function main() {
     try {
       const full = await getJson(item.url, token);
       const ad = full.ad_content || full.json || full;
-      if (!globalThis.__printed) {
-        globalThis.__printed = true;
-        console.log("Felter i en annonse:", JSON.stringify(Object.keys(full)), JSON.stringify(Object.keys(ad)));
-        console.log("Eksempel:", JSON.stringify({ ...ad, description: undefined }).slice(0, 3000));
-        if (process.env.SAVE_SAMPLE) writeFileSync("content/stillinger/sample.txt", JSON.stringify({ outer: Object.keys(full), ad }, null, 2));
-      }
       if (ad.status && ad.status !== "ACTIVE") continue;
       const deadline = isoDate(ad.applicationDue);
       if (deadline && deadline < today) continue;
       const uuid = ad.uuid || entry.uuid;
-      const city = (ad.workLocations || []).map((w) => w.city || w.municipal).filter(Boolean);
+      const locations = ad.workLocations || [];
+      const city = locations.map((w) => w.city || w.municipal).filter(Boolean);
+      const county = titleCase(locations.map((w) => w.county).find(Boolean) || "");
+      const isUrl = (u) => /^https?:\/\//.test(String(u || ""));
+      const adUrl = isUrl(ad.link) ? ad.link : `https://arbeidsplassen.nav.no/stillinger/stilling/${ad.uuid || entry.uuid}`;
       const title = (ad.title || entry.title || "").trim();
       const fullText = stripHtml(ad.description);
       if (!suitsBachelor(title, fullText)) {
@@ -230,10 +257,20 @@ async function main() {
           logo: "",
           type: jobType(title, ad),
           field,
-          location: [...new Set(city.map((c) => c.charAt(0) + c.slice(1).toLowerCase()))].join(", ") || entry.municipal || "",
+          location: [...new Set(city.map(titleCase))].join(", ") || titleCase(entry.municipal) || "",
+          county,
           deadline,
-          link: `https://arbeidsplassen.nav.no/stillinger/stilling/${uuid}`,
+          deadlineText: deadline ? "" : String(ad.applicationDue || "").trim().slice(0, 80),
+          link: isUrl(ad.applicationUrl) ? ad.applicationUrl : isUrl(ad.sourceurl) ? ad.sourceurl : adUrl,
+          adUrl,
           description: shorten(fullText),
+          body: htmlToText(ad.description),
+          employerInfo: htmlToText(ad.employer?.description),
+          jobtitle: String(ad.jobtitle || "").trim(),
+          engagement: [ad.engagementtype, ad.extent].filter(Boolean).join(", "),
+          positions: String(ad.positioncount || "").trim(),
+          start: String(ad.starttime || "").trim().slice(0, 60),
+          sector: String(ad.sector || "").trim(),
           published: String(entry.sistEndret || item.date_modified || "").slice(0, 10),
           source: "nav",
         },

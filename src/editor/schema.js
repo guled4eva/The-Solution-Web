@@ -25,6 +25,11 @@ export function slugify(text) {
     .slice(0, 80);
 }
 
+export const COUNTIES = [
+  "Oslo", "Akershus", "Østfold", "Buskerud", "Innlandet", "Vestfold", "Telemark", "Agder", "Rogaland",
+  "Vestland", "Møre og Romsdal", "Trøndelag", "Nordland", "Troms", "Finnmark", "Utlandet",
+];
+
 export const JOB_FIELDS = ["Bioteknologi", "Analytisk kjemi", "Prosessteknologi"];
 
 export const JOB_TYPES = ["Sommerjobb", "Fast stilling", "Vikariat", "Deltid", "Internship", "Trainee / graduate", "Masteroppgave", "Stipendiat / PhD", "Annet"];
@@ -221,7 +226,7 @@ export const SECTIONS = [
     dir: "content/stillinger",
     newLabel: "Ny stilling",
     allLabel: "Alle stillinger",
-    urlPrefix: "/bedrift/jobber#",
+    urlPrefix: "/bedrift/jobber/",
     emptyText: "Ingen stillinger ennå.",
     listHint: "Bare stillinger som passer for en bachelorgrad. Stillinger med utløpt søknadsfrist skjules automatisk. Stillinger fra NAV (som starter med «nav-» i adressen) hentes og oppdateres automatisk hver mandag – endringer i dem blir overskrevet.",
     Icon: Briefcase,
@@ -236,7 +241,7 @@ export const SECTIONS = [
     sortItems: (list) =>
       [...list].sort((a, b) => String(a.data.deadline || "9999").localeCompare(String(b.data.deadline || "9999"))),
     newItem: () => ({ title: "", company: "", logo: "", field: "Bioteknologi", type: "Sommerjobb", location: "", deadline: "", link: "", description: "" }),
-    viewUrl: () => "/bedrift/jobber",
+    viewUrl: (slug) => `/bedrift/jobber/${slug}`,
     fields: [
       { name: "title", label: "Stilling", type: "text", required: true, hint: "F.eks. «Sommerstudent i analyselab»." },
       { name: "company", label: "Bedrift", type: "text", required: true },
@@ -244,9 +249,17 @@ export const SECTIONS = [
       { name: "field", label: "Fagområde", type: "select", options: JOB_FIELDS, required: true },
       { name: "type", label: "Type", type: "select", options: JOB_TYPES, required: true },
       { name: "location", label: "Sted", type: "text", hint: "F.eks. Oslo, eller «Oslo / hjemmekontor»." },
+      { name: "county", label: "Fylke", type: "select", options: COUNTIES, hint: "Brukes til å sortere stillingene etter sted." },
       { name: "deadline", label: "Søknadsfrist", type: "date", hint: "Tomt = løpende. Stillingen skjules automatisk etter fristen." },
       { name: "link", label: "Lenke til annonsen", type: "text", inputType: "url", required: true, hint: "Der studentene søker, f.eks. finn.no eller bedriftens side." },
-      { name: "description", label: "Kort beskrivelse", type: "textarea", rows: 4, hint: "2–4 setninger: hva jobben er og hvem den passer for." },
+      { name: "description", label: "Kort beskrivelse", type: "textarea", rows: 4, hint: "2–4 setninger som vises i listen." },
+      {
+        name: "body",
+        label: "Hele stillingsteksten",
+        type: "textarea",
+        rows: 14,
+        hint: "Vises når man trykker på stillingen. Tom linje = nytt avsnitt. Start en linje med «• » for punktliste.",
+      },
     ],
   },
   {

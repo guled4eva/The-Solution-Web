@@ -4608,3 +4608,125 @@ main > * {
 .job-card__field--prosessteknologi {
   background: #c2541f;
 }
+.job-selects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+a.job-card__cta {
+  position: relative;
+  z-index: 1;
+  color: #fff !important;
+  text-decoration: none;
+  transition: background var(--duration);
+}
+a.job-card__cta:hover {
+  background: var(--color-accent);
+}
+
+/* Én stilling */
+.job-detail__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+.job-detail__logo {
+  width: 80px;
+  height: 80px;
+  flex: none;
+}
+.job-detail__title {
+  margin: 0.2rem 0 0.75rem;
+  font-size: var(--text-2xl);
+  line-height: 1.1;
+}
+.job-detail__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 2rem 3rem;
+  align-items: start;
+  margin-top: 1.5rem;
+}
+@media (max-width: 899px) {
+  .job-detail__layout {
+    grid-template-columns: 1fr;
+  }
+  .job-detail__aside {
+    order: -1;
+  }
+}
+.job-detail__aside {
+  position: sticky;
+  top: calc(var(--nav-height) + 1.5rem);
+}
+@media (max-width: 899px) {
+  .job-detail__aside {
+    position: static;
+  }
+}
+.job-detail__box {
+  display: grid;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-large);
+  box-shadow: var(--shadow-small);
+}
+.job-detail__facts {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+}
+.job-detail__facts dt {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+.job-detail__facts dd {
+  margin: 0.1rem 0 0;
+  font-weight: 600;
+}
+.job-detail__apply {
+  justify-content: center;
+}
+.job-detail__source {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: var(--text-sm);
+}
+.job-detail__employer {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
+}
+.job-detail__employer h2 {
+  font-size: var(--text-xl);
+  margin-bottom: 0.75rem;
+}
+.ad-text {
+  max-width: 72ch;
+  line-height: 1.7;
+}
+.ad-text p,
+.ad-text ul {
+  margin: 0 0 1rem;
+}
+.ad-text ul {
+  padding-left: 1.25rem;
+}
+.ad-text li {
+  margin-bottom: 0.35rem;
+}
+.ad-text li::marker {
+  color: var(--color-secondary);
+}
+.ad-text h3 {
+  margin: 1.5rem 0 0.5rem;
+  font-size: var(--text-lg);
+  color: var(--color-primary);
+}

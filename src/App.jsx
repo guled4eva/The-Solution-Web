@@ -15,6 +15,7 @@ import Editor from "./pages/Editor.jsx";
 import Admin from "./pages/Admin.jsx";
 import Industry from "./pages/Industry.jsx";
 import Jobs from "./pages/Jobs.jsx";
+import JobDetail from "./pages/JobDetail.jsx";
 import Interviews from "./pages/Interviews.jsx";
 import Interview from "./pages/Interview.jsx";
 
@@ -41,6 +42,7 @@ export default function App() {
           <Route path="/arrangementer/:slug" element={<EventDetails />} />
           <Route path="/bedrift" element={<Industry />} />
           <Route path="/bedrift/jobber" element={<Jobs />} />
+          <Route path="/bedrift/jobber/:slug" element={<JobDetail />} />
           <Route path="/bedrift/intervjuer" element={<Interviews />} />
           <Route path="/bedrift/intervjuer/:slug" element={<Interview />} />
           <Route path="/forslagsboksen" element={<Suggestions />} />

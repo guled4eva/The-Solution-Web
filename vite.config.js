@@ -77,6 +77,11 @@ function githubPagesRoutes() {
         .filter((file) => file.endsWith(".json"))
         .map((file) => file.replace(/\.json$/, ""));
       interviewSlugs.forEach((slug) => copyTo(`bedrift/intervjuer/${slug}.html`));
+      const jobDir = "content/stillinger";
+      const jobSlugs = (existsSync(jobDir) ? readdirSync(jobDir) : [])
+        .filter((file) => file.endsWith(".json"))
+        .map((file) => file.replace(/\.json$/, ""));
+      jobSlugs.forEach((slug) => copyTo(`bedrift/jobber/${slug}.html`));
 
       // sitemap.xml + robots.txt for Google (board-only pages are left out)
       const publicPages = ["", "styret", "arrangementer", "bedrift", "bedrift/jobber", "bedrift/intervjuer", "forslagsboksen", "om-oss", "kontakt"];
@@ -85,7 +90,7 @@ function githubPagesRoutes() {
         .map((file) => slugify(file.replace(/\.json$/, "")))
         .filter(Boolean)
         .map((slug) => `arrangementer/${slug}`);
-      const urls = [...publicPages, ...eventPages, ...interviewSlugs.map((slug) => `bedrift/intervjuer/${slug}`)].map((path) => `  <url><loc>${SITE_URL}/${path}</loc></url>`);
+      const urls = [...publicPages, ...eventPages, ...interviewSlugs.map((slug) => `bedrift/intervjuer/${slug}`), ...jobSlugs.map((slug) => `bedrift/jobber/${slug}`)].map((path) => `  <url><loc>${SITE_URL}/${path}</loc></url>`);
       writeFileSync(
         join(outDir, "sitemap.xml"),
         `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>\n`

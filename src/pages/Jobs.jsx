@@ -19,16 +19,29 @@ export default function Jobs() {
   const jobs = getOpenJobs();
   const [params, setParams] = useSearchParams();
   const field = FIELDS.includes(params.get("fag")) ? params.get("fag") : "";
+  const place = params.get("sted") || "";
   const [type, setType] = useState("");
   const [sort, setSort] = useState("frist");
 
-  const inField = field ? jobs.filter((j) => j.field === field) : jobs;
+  const inPlace = place ? jobs.filter((j) => j.county === place) : jobs;
+  const inField = field ? inPlace.filter((j) => j.field === field) : inPlace;
+  const counties = useMemo(() => {
+    const counts = new Map();
+    jobs.forEach((j) => j.county && counts.set(j.county, (counts.get(j.county) || 0) + 1));
+    return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "nb"));
+  }, [jobs]);
+  const setParam = (key, value) => {
+    const next = new URLSearchParams(params);
+    if (value) next.set(key, value);
+    else next.delete(key);
+    setParams(next, { replace: true });
+  };
   const types = useMemo(() => [...new Set(inField.map((j) => j.type).filter(Boolean))], [inField]);
   const shown = (type ? inField.filter((j) => j.type === type) : inField).slice().sort(SORTS[sort].fn);
 
   const setField = (f) => {
     setType("");
-    setParams(f ? { fag: f } : {}, { replace: true });
+    setParam("fag", f);
   };
 
   return (
@@ -48,7 +61,7 @@ export default function Jobs() {
           <div className="job-fields" role="group" aria-label="Fagområde">
             <button type="button" className={`job-field ${!field ? "is-active" : ""}`} aria-pressed={!field} onClick={() => setField("")}>
               <span className="job-field__name">Alle fagområder</span>
-              <span className="job-field__count">{jobs.length}</span>
+              <span className="job-field__count">{inPlace.length}</span>
             </button>
             {FIELDS.map((f) => (
               <button
@@ -59,7 +72,7 @@ export default function Jobs() {
                 onClick={() => setField(f)}
               >
                 <span className="job-field__name">{f}</span>
-                <span className="job-field__count">{jobs.filter((j) => j.field === f).length}</span>
+                <span className="job-field__count">{inPlace.filter((j) => j.field === f).length}</span>
               </button>
             ))}
           </div>
@@ -85,6 +98,20 @@ export default function Jobs() {
             ) : (
               <span />
             )}
+            <div className="job-selects">
+            {counties.length > 1 && (
+              <label className="job-sort">
+                <span>Sted:</span>
+                <select value={place} onChange={(e) => setParam("sted", e.target.value)} className="field__control">
+                  <option value="">Hele landet</option>
+                  {counties.map(([c, n]) => (
+                    <option key={c} value={c}>
+                      {c} ({n})
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
             <label className="job-sort">
               <span>Sorter:</span>
               <select value={sort} onChange={(e) => setSort(e.target.value)} className="field__control">
@@ -95,6 +122,7 @@ export default function Jobs() {
                 ))}
               </select>
             </label>
+            </div>
           </div>
 
           <p className="job-note">
@@ -112,7 +140,11 @@ export default function Jobs() {
           ) : (
             <EmptyState
               icon={Briefcase}
-              title={field ? `Ingen ledige stillinger innen ${field.toLowerCase()} akkurat nå` : "Ingen ledige stillinger akkurat nå"}
+              title={
+                field || place
+                  ? `Ingen ledige stillinger${field ? ` innen ${field.toLowerCase()}` : ""}${place ? ` i ${place}` : ""} akkurat nå`
+                  : "Ingen ledige stillinger akkurat nå"
+              }
               text="Listen oppdateres automatisk hver uke – følg også med på Instagram."
             >
               <Link to="/bedrift#samarbeid" className="text-link">
