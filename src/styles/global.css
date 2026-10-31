@@ -4499,3 +4499,112 @@ main > * {
   font-size: var(--text-xs);
   color: var(--color-text-muted);
 }
+
+/* Stillinger: fagområder */
+.job-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  gap: 0.6rem;
+  margin-bottom: 1.25rem;
+}
+.job-field {
+  --field-color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border: 1.5px solid var(--color-border);
+  border-left: 5px solid var(--field-color);
+  border-radius: var(--radius-medium);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color var(--duration),
+    background var(--duration),
+    transform var(--duration) var(--ease);
+}
+.job-field:hover {
+  transform: translateY(-2px);
+  border-color: var(--field-color);
+}
+.job-field.is-active {
+  background: var(--field-color);
+  border-color: var(--field-color);
+  color: #fff;
+}
+.job-field__count {
+  min-width: 28px;
+  padding: 0.1rem 0.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-alt);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+.job-field.is-active .job-field__count {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+.job-field--bioteknologi {
+  --field-color: #1f8a70;
+}
+.job-field--analytisk-kjemi {
+  --field-color: #2a62a3;
+}
+.job-field--prosessteknologi {
+  --field-color: #c2541f;
+}
+.job-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+}
+.job-toolbar .filter-chips {
+  margin-bottom: 0.75rem;
+}
+.job-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.job-sort .field__control {
+  width: auto;
+  min-height: 40px;
+  padding: 0.4rem 0.75rem;
+  font-size: var(--text-sm);
+}
+.job-note {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.25rem 0 1.25rem;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+.job-card__field {
+  padding: 0.1rem 0.6rem;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: #fff;
+  background: var(--color-primary);
+}
+.job-card__field--bioteknologi {
+  background: #1f8a70;
+}
+.job-card__field--analytisk-kjemi {
+  background: #2a62a3;
+}
+.job-card__field--prosessteknologi {
+  background: #c2541f;
+}

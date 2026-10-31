@@ -43,6 +43,9 @@ export default function JobCard({ job, compact = false }) {
           )}
         </h3>
         <ul className="job-card__meta">
+          {job.field && (
+            <li className={`job-card__field job-card__field--${job.field.toLowerCase().replace(/[^a-z]+/g, "-")}`}>{job.field}</li>
+          )}
           {job.type && <li className="job-card__type">{job.type}</li>}
           {job.location && (
             <li>

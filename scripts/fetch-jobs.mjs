@@ -105,6 +105,67 @@ function jobType(title, ad) {
   return "Annet";
 }
 
+// ---------- Fagområde ----------
+// Hver stilling får ett fagområde ut fra ord i tittel (teller tre ganger) og beskrivelse.
+const FIELDS = {
+  Bioteknologi: [
+    /bioteknolog/, /biotek/, /biotech/, /bioprocess/, /bioprosess/, /molekylærbiolog/, /molecular biolog/, /mikrobiolog/,
+    /microbiolog/, /biokjem/, /biochem/, /fermenter/, /cellekultur/, /cell culture/, /\bprotein/, /\benzym/, /\bdna\b/,
+    /\bpcr\b/, /genetikk/, /\bgenom/, /sekvenser/, /\balg(er|e)?\b/, /biologisk/,
+  ],
+  "Analytisk kjemi": [
+    /analytisk/, /analytical/, /analyse/, /\banalys/, /laborant/, /laborator/, /\blab\b/, /\bqc\b/, /kvalitetskontroll/,
+    /quality control/, /hplc/, /kromatograf/, /chromatograph/, /\bgc\b/, /\bms\b/, /spektro/, /spectro/, /titrer/,
+    /prøver/, /\bsamples?\b/, /akkreditert/, /iso 17025/,
+  ],
+  Prosessteknologi: [
+    /prosess/, /process/, /produksjon/, /production/, /manufactur/, /operatør/, /operator/, /fabrikk/, /factory/,
+    /\banlegg/, /\bplant\b/, /skalering/, /scale-up/, /oppskaler/, /\bgmp\b/, /industri/, /reaktor/, /reactor/,
+    /destillasjon/, /\bdrift\b/, /vedlikehold/,
+  ],
+};
+
+
+function fieldOf(title, text) {
+  const t = lower(title);
+  const d = lower(text);
+  let best = null;
+  let bestScore = 0;
+  for (const [name, patterns] of Object.entries(FIELDS)) {
+    let score = 0;
+    for (const re of patterns) {
+      if (re.test(t)) score += 3;
+      const g = new RegExp(re.source, "g");
+      score += Math.min(3, (d.match(g) || []).length);
+    }
+    if (score > bestScore) {
+      best = name;
+      bestScore = score;
+    }
+  }
+  return bestScore >= 2 ? best : null;
+}
+
+// ---------- Bare stillinger som passer for en bachelorgrad ----------
+const NOT_BACHELOR_TITLE = [
+  /ph\.?\s?d/, /stipendiat/, /postdo/, /research fellow/, /doktorgrad/, /professor/, /\bforsker\b/, /researcher/,
+  /head of/, /\bleder\b/, /gruppeleder/, /avdelingsleder/, /\bsjef/, /direktør/, /director/, /manager/, /\bsenior/,
+  /overlege/, /\blege\b/, /fagansvarlig/, /funksjonsleiar/, /funksjonsleder/,
+];
+function suitsBachelor(title, text) {
+  const t = lower(title);
+  if (NOT_BACHELOR_TITLE.some((re) => re.test(t))) return false;
+  const d = lower(text);
+  const mentionsBachelor = /bachelor|fagbrev|fagskole|ingeniørutdanning|treårig|3-årig|nyutdannet|newly graduated|graduate/.test(d);
+  const requiresHigher =
+    /(krav|krever|kreves|må ha|required|requires|must have)[^.]{0,120}(master|mastergrad|msc|m\.sc|sivilingeniør|doktorgrad|ph\.?\s?d)/.test(d) ||
+    /(master|mastergrad|msc|m\.sc|sivilingeniør|doktorgrad|ph\.?\s?d)[^.]{0,60}(er et krav|kreves|is required|required)/.test(d) ||
+    /(minimum|minst) (en )?(master|mastergrad)/.test(d);
+  if (requiresHigher && !mentionsBachelor) return false;
+  if (/(master|mastergrad|\bmsc\b|ph\.?\s?d|doktorgrad)/.test(d) && !mentionsBachelor && !/(bachelor|master)\s*(eller|or|\/)/.test(d)) return false;
+  return true;
+}
+
 async function main() {
   const token = await getToken();
   const since = new Date(Date.now() - DAYS_BACK * 86400000).toUTCString();
@@ -144,6 +205,16 @@ async function main() {
       const uuid = ad.uuid || entry.uuid;
       const city = (ad.workLocations || []).map((w) => w.city || w.municipal).filter(Boolean);
       const title = (ad.title || entry.title || "").trim();
+      const fullText = stripHtml(ad.description);
+      if (!suitsBachelor(title, fullText)) {
+        console.log(`  (ikke bachelor) ${title}`);
+        continue;
+      }
+      const field = fieldOf(title, fullText);
+      if (!field) {
+        console.log(`  (uten fagområde) ${title}`);
+        continue;
+      }
       jobs.push({
         file: `nav-${String(uuid).slice(0, 13).toLowerCase().replace(/[^a-z0-9-]/g, "")}.json`,
         modified: entry.sistEndret || item.date_modified || "",
@@ -152,10 +223,12 @@ async function main() {
           company: (ad.employer?.name || ad.businessName || entry.businessName || "").trim(),
           logo: "",
           type: jobType(title, ad),
+          field,
           location: [...new Set(city.map((c) => c.charAt(0) + c.slice(1).toLowerCase()))].join(", ") || entry.municipal || "",
           deadline,
           link: `https://arbeidsplassen.nav.no/stillinger/stilling/${uuid}`,
-          description: shorten(stripHtml(ad.description)),
+          description: shorten(fullText),
+          published: String(entry.sistEndret || item.date_modified || "").slice(0, 10),
           source: "nav",
         },
       });
@@ -187,7 +260,9 @@ async function main() {
     if (old !== text) writeFileSync(path, text);
   }
   console.log(`Lagret ${keep.length} stillinger:`);
-  keep.forEach((j) => console.log(` - ${j.data.title} (${j.data.company}, ${j.data.location}, frist ${j.data.deadline || "løpende"})`));
+  keep.forEach((j) =>
+    console.log(` - [${j.data.field}] ${j.data.title} (${j.data.company}, ${j.data.location}, frist ${j.data.deadline || "løpende"})`)
+  );
 }
 
 main().catch((err) => {

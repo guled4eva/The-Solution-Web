@@ -30,7 +30,7 @@ export default function Industry() {
       to: "/bedrift/jobber",
       Icon: Briefcase,
       title: "Ledige stillinger",
-      text: "Sommerjobber, internships og faste stillinger for bioteknologer og kjemikere.",
+      text: "Stillinger innen bioteknologi, analytisk kjemi og prosessteknologi for deg med bachelor.",
       count: jobs.length,
       unit: jobs.length === 1 ? "ledig stilling" : "ledige stillinger",
     },

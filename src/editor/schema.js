@@ -25,6 +25,8 @@ export function slugify(text) {
     .slice(0, 80);
 }
 
+export const JOB_FIELDS = ["Bioteknologi", "Analytisk kjemi", "Prosessteknologi"];
+
 export const JOB_TYPES = ["Sommerjobb", "Fast stilling", "Vikariat", "Deltid", "Internship", "Trainee / graduate", "Masteroppgave", "Stipendiat / PhD", "Annet"];
 
 const todayKey = () => new Date().toISOString().slice(0, 10);
@@ -221,23 +223,25 @@ export const SECTIONS = [
     allLabel: "Alle stillinger",
     urlPrefix: "/bedrift/jobber#",
     emptyText: "Ingen stillinger ennå.",
-    listHint: "Stillinger med utløpt søknadsfrist skjules automatisk. Stillinger fra NAV (som starter med «nav-» i adressen) hentes og oppdateres automatisk hver mandag – endringer i dem blir overskrevet.",
+    listHint: "Bare stillinger som passer for en bachelorgrad. Stillinger med utløpt søknadsfrist skjules automatisk. Stillinger fra NAV (som starter med «nav-» i adressen) hentes og oppdateres automatisk hver mandag – endringer i dem blir overskrevet.",
     Icon: Briefcase,
     slugFrom: (d) => [d.company, d.title].filter(Boolean).join(" "),
     itemLabel: (d) => [d.title, d.company].filter(Boolean).join(" – ") || "Ny stilling",
     itemMeta: (d) => {
-      if (!d.deadline) return "Løpende frist";
+      const prefix = d.field ? `${d.field} · ` : "";
+      if (!d.deadline) return `${prefix}Løpende frist`;
       const expired = d.deadline < todayKey();
-      return `Frist ${d.deadline.split("-").reverse().join(".")}${expired ? " · utløpt" : ""}`;
+      return `${prefix}Frist ${d.deadline.split("-").reverse().join(".")}${expired ? " · utløpt" : ""}`;
     },
     sortItems: (list) =>
       [...list].sort((a, b) => String(a.data.deadline || "9999").localeCompare(String(b.data.deadline || "9999"))),
-    newItem: () => ({ title: "", company: "", logo: "", type: "Sommerjobb", location: "", deadline: "", link: "", description: "" }),
+    newItem: () => ({ title: "", company: "", logo: "", field: "Bioteknologi", type: "Sommerjobb", location: "", deadline: "", link: "", description: "" }),
     viewUrl: () => "/bedrift/jobber",
     fields: [
       { name: "title", label: "Stilling", type: "text", required: true, hint: "F.eks. «Sommerstudent i analyselab»." },
       { name: "company", label: "Bedrift", type: "text", required: true },
       { name: "logo", label: "Bedriftens logo", type: "image", folder: "bedrifter", hint: "Tomt = forbokstaven i bedriftsnavnet." },
+      { name: "field", label: "Fagområde", type: "select", options: JOB_FIELDS, required: true },
       { name: "type", label: "Type", type: "select", options: JOB_TYPES, required: true },
       { name: "location", label: "Sted", type: "text", hint: "F.eks. Oslo, eller «Oslo / hjemmekontor»." },
       { name: "deadline", label: "Søknadsfrist", type: "date", hint: "Tomt = løpende. Stillingen skjules automatisk etter fristen." },

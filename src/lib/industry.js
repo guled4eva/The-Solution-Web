@@ -1,6 +1,9 @@
 import { jobs, interviews } from "../data/industry.js";
 import { isFilled } from "./config.js";
 
+/** The three fields jobs are sorted into (same names as in the editor and the NAV import). */
+export const FIELDS = ["Bioteknologi", "Analytisk kjemi", "Prosessteknologi"];
+
 const todayKey = () => {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
