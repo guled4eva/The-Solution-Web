@@ -1,5 +1,34 @@
 {
   "show": true,
   "title": "Fra arrangementene våre",
-  "images": []
+  "images": [
+    {
+      "image": "/images/galleri/20261031-171130-igexport-dzz4rqhibui-7.jpg",
+      "caption": ""
+    },
+    {
+      "image": "/images/galleri/20261031-171120-igexport-dzz4rqhibui-2.jpg",
+      "caption": ""
+    },
+    {
+      "image": "/images/galleri/20261031-171125-igexport-dzz4rqhibui-3.jpg",
+      "caption": ""
+    },
+    {
+      "image": "/images/galleri/20261031-171134-igexport-dzz4rqhibui-4.jpg",
+      "caption": ""
+    },
+    {
+      "image": "/images/galleri/20261031-171138-igexport-dzz4rqhibui-5.jpg",
+      "caption": ""
+    },
+    {
+      "image": "/images/galleri/20261031-171143-igexport-dzz4rqhibui-6.jpg",
+      "caption": ""
+    },
+    {
+      "image": "/images/galleri/20261031-171147-igexport-dzz4rqhibui.jpg",
+      "caption": ""
+    }
+  ]
 }
