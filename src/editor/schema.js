@@ -1,4 +1,5 @@
 import { Briefcase, MessageSquareQuote } from "lucide-react";
+import industryDefaults from "../../content/bedrift/bedrift.json";
 
 /**
  * What can be edited on /loggin.
@@ -181,6 +182,7 @@ export const SECTIONS = [
     label: "Galleri",
     kind: "single",
     path: "content/galleri/galleri.json",
+    newItem: () => ({ show: true, title: "Fra arrangementene våre", images: [] }),
     viewUrl: () => "/",
     fields: [
       { name: "show", label: "Vis galleriet på forsiden", type: "boolean", hint: "Bildene ruller sakte bortover under «Kommende arrangementer»." },
@@ -199,6 +201,7 @@ export const SECTIONS = [
     label: "Bedrift",
     kind: "single",
     path: "content/bedrift/bedrift.json",
+    newItem: () => ({ ...industryDefaults }),
     viewUrl: () => "/bedrift",
     fields: [
       { name: "title", label: "Overskrift øverst", type: "text" },

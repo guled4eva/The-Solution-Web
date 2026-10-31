@@ -173,7 +173,12 @@ function EditorApp() {
   const currentPath =
     section.kind === "single" ? section.path : itemSlug === "ny" ? NEW : itemSlug ? itemPath(section, itemSlug) : null;
   const saved = currentPath && currentPath !== NEW ? files?.[currentPath] : null;
-  const data = currentPath ? drafts[currentPath] ?? saved?.data ?? (currentPath === NEW ? section.newItem() : null) : null;
+  // A single-file section whose file doesn't exist yet starts empty; saving creates the file.
+  const data = currentPath
+    ? drafts[currentPath] ??
+      saved?.data ??
+      (currentPath === NEW || (section.kind === "single" && section.newItem) ? section.newItem() : null)
+    : null;
   const dirty = currentPath ? currentPath in drafts : false;
 
   const change = (next) => {
