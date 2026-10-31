@@ -30,7 +30,7 @@ const INCLUDE = [
 // Ord som utelukker stillingen
 const EXCLUDE = [
   /lærer/, /lektor/, /renhold/, /kokk/, /barnehage/, /sykepleier/, /\blege\b/, /tannlege/, /kjemisk rens/,
-  /bioingeniør/, /overlege/, /legespesialist/, /cyber/, /sikkerhet/, /selger/, /\bikt\b/, /\bit[- ]/, /programvare/, /software/, /test(er|analytiker)/,
+  /bioingeniør/, /overlege/, /legespesialist/, /cyber/, /sikkerhet/, /selger/, /\bikt\b/, /\bit[- ]/, /programvare/, /software/, /test(er|analytiker)/, /kundeservice/,
 ];
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -98,6 +98,8 @@ function jobType(title, ad) {
   if (t.includes("trainee") || t.includes("graduate")) return "Trainee / graduate";
   if (t.includes("intern") || t.includes("praksis")) return "Internship";
   if (t.includes("master")) return "Masteroppgave";
+  if (/ph\.?d|stipendiat|postdo|research fellow/.test(t)) return "Stipendiat / PhD";
+  if (t.includes("vikar")) return "Vikariat";
   if (lower(ad.extent).includes("deltid")) return "Deltid";
   if (engagement.includes("fast")) return "Fast stilling";
   return "Annet";

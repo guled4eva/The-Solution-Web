@@ -25,7 +25,7 @@ export function slugify(text) {
     .slice(0, 80);
 }
 
-export const JOB_TYPES = ["Sommerjobb", "Fast stilling", "Deltid", "Internship", "Trainee / graduate", "Masteroppgave", "Annet"];
+export const JOB_TYPES = ["Sommerjobb", "Fast stilling", "Vikariat", "Deltid", "Internship", "Trainee / graduate", "Masteroppgave", "Stipendiat / PhD", "Annet"];
 
 const todayKey = () => new Date().toISOString().slice(0, 10);
 
