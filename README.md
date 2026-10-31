@@ -274,3 +274,13 @@ src/
 ```
 
 Ikoner kommer fra [Lucide](https://lucide.dev). Skrifttypene er Bricolage Grotesque og Instrument Sans fra Google Fonts.
+
+## Ledige stillinger fra NAV (automatisk)
+
+Hver mandag henter GitHub Actions (`.github/workflows/stillinger.yml`) ledige stillinger innen kjemi, biokjemi, bioteknologi og prosess fra NAV sin åpne stillingsfeed ([arbeidsplassen.nav.no](https://arbeidsplassen.nav.no)), og publiserer nettsiden på nytt. Utløpte og inaktive stillinger fjernes automatisk.
+
+- Filtrene (hvilke ord i tittelen som tas med eller utelukkes) står øverst i `scripts/fetch-jobs.mjs`.
+- Kjør for hånd: **Actions → «Hent ledige stillinger» → Run workflow**.
+- Stillinger dere legger inn selv på `/loggin` blir aldri endret. Bare filer som starter med `nav-` styres automatisk.
+- Feeden bruker NAVs offentlige test-nøkkel. For stabil drift kan foreningen be om en egen nøkkel fra nav.team.arbeidsplassen@nav.no og legge den inn som GitHub-secret `NAV_FEED_TOKEN`. Vilkår: arbeidsplassen.nav.no/vilkar-api.
+- Finn.no-annonser er ikke med i NAVs feed.
