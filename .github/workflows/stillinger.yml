@@ -29,6 +29,7 @@ jobs:
       - name: Hent stillinger fra NAV
         env:
           NAV_FEED_TOKEN: ${{ secrets.NAV_FEED_TOKEN }}
+          SAVE_SAMPLE: "1"
         run: node scripts/fetch-jobs.mjs
 
       - name: Lagre endringer
