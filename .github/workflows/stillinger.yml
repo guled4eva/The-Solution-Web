@@ -1,0 +1,53 @@
+# Henter ledige stillinger innen kjemi, biokjemi, bioteknologi og prosess fra
+# arbeidsplassen.nav.no hver mandag, og publiserer nettsiden på nytt hvis noe er endret.
+# Kan også startes for hånd: Actions → «Hent ledige stillinger» → Run workflow.
+name: Hent ledige stillinger
+
+on:
+  schedule:
+    - cron: "17 5 * * 1" # mandager ca. kl. 06–07 norsk tid
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: stillinger
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Hent stillinger fra NAV
+        env:
+          NAV_FEED_TOKEN: ${{ secrets.NAV_FEED_TOKEN }}
+        run: node scripts/fetch-jobs.mjs
+
+      - name: Lagre endringer
+        id: commit
+        run: |
+          git add content/stillinger
+          if git diff --cached --quiet; then
+            echo "Ingen endringer."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git config user.name "The Solution bot"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Oppdaterte ledige stillinger fra arbeidsplassen.nav.no"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publiser nettsiden
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy.yml --ref main

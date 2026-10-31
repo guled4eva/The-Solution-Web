@@ -221,7 +221,7 @@ export const SECTIONS = [
     allLabel: "Alle stillinger",
     urlPrefix: "/bedrift/jobber#",
     emptyText: "Ingen stillinger ennå.",
-    listHint: "Stillinger med utløpt søknadsfrist skjules automatisk på nettsiden. Slett dem når de ikke trengs lenger.",
+    listHint: "Stillinger med utløpt søknadsfrist skjules automatisk. Stillinger fra NAV (som starter med «nav-» i adressen) hentes og oppdateres automatisk hver mandag – endringer i dem blir overskrevet.",
     Icon: Briefcase,
     slugFrom: (d) => [d.company, d.title].filter(Boolean).join(" "),
     itemLabel: (d) => [d.title, d.company].filter(Boolean).join(" – ") || "Ny stilling",
